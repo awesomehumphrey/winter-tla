@@ -409,6 +409,28 @@
                       prevCount + (link.target.index === i ? 1 : 0), 0);
                      const outcomingCount = graph.links.reduce((prevCount, link) => 
                       prevCount + (link.source.index === i ? 1 : 0), 0);
+
+                     // Find the original node data from graph.nodes
+                     const originalNode = graph.nodes.find(node => node.id === d.index || node.id === i);
+                     
+                     // Create a state description based on available node data
+                     let stateDescription = "";
+                     if (originalNode) {
+                         // Show all properties of the node except common ones already displayed elsewhere
+                         const commonProps = ["id", "group", "index", "cluster", "r", "x", "y", "vx", "vy", "fx", "fy"];
+                         stateDescription = Object.entries(originalNode)
+                             .filter(([key]) => !commonProps.includes(key))
+                             .map(([key, value]) => `${key}: ${value}`)
+                             .join("<br>");
+                         
+                         // If there are no extra properties, show the ID
+                         if (!stateDescription) {
+                             stateDescription = `State ID: ${originalNode.id}`;
+                         }
+                     } else {
+                         stateDescription = `State ID: ${d.index || i}`;
+                     }
+                     
                      div.transition()    
                          .duration(200)    
                          .style("opacity", .9);    
@@ -418,7 +440,7 @@
                          <p> Cluster: <strong>${d.cluster}</strong> </p>
                          <p> Incoming count: <strong>${incomingCount}</strong></p>
                          <p> Outcoming count: <strong>${outcomingCount}</strong></p>
-                         <p> State description: <strong>${"#FIXME"}</strong> </p>
+                         <p> State description: <strong>${stateDescription}</strong> </p>
                          `)  
                          .style("left", (d3.event.pageX) + "px")   
                          .style("top", (d3.event.pageY - 28) + "px");  
