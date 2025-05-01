@@ -1,330 +1,497 @@
 <!DOCTYPE html>
-<html lang='en'>
-   <meta charset="utf-8">
-    <!-- Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Lora&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Manrope&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@600&display=swap" rel="stylesheet">
+<html lang="en">
+	<meta charset="utf-8" />
+	<!-- Font -->
+	<link
+		href="https://fonts.googleapis.com/css2?family=Lora&display=swap"
+		rel="stylesheet"
+	/>
+	<link
+		href="https://fonts.googleapis.com/css2?family=Manrope&display=swap"
+		rel="stylesheet"
+	/>
+	<link
+		href="https://fonts.googleapis.com/css2?family=Raleway:wght@600&display=swap"
+		rel="stylesheet"
+	/>
 
-    <!-- Bootstrap -->
-    <link href="styles/dashboard.css" type="text/css" rel="stylesheet"/>
+	<!-- Bootstrap -->
+	<link href="styles/dashboard.css" type="text/css" rel="stylesheet" />
 
-     <!-- Javascript-->
-     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
-     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
-     <script src="//d3js.org/d3.v4.min.js"></script>
-     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css" integrity="sha256-h20CPZ0QyXlBuAw7A+KluUYx/3pK+c7lYEpqLTlxjYQ=" crossorigin="anonymous" />
-   <title>Visualisation of TLA+ Specifications</title>
-   <link rel="stylesheet" href="styles.css">
-   <style>
-      .background {
-        fill: #EEE;
-      }
-      line {
-        stroke: #fff;
-      }
-      text.active {
-        fill: red;
-      }
-      div.tooltip { 
-        position: absolute;     
-        text-align: center;     
-        width: 150px;          
-        padding: 2px;       
-        font: 12px sans-serif;    
-        background: lightgrey; 
-        border: 0px;    
-        border-radius: 8px;     
-        pointer-events: none;     
-      }
-      #uploadLabel {
-        margin-right: 0.5em;
-      }
-      #clear {
-          display: none;
-      }
+	<!-- Javascript-->
+	<script
+		src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"
+		integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p"
+		crossorigin="anonymous"
+	></script>
+	<script
+		src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js"
+		integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF"
+		crossorigin="anonymous"
+	></script>
+	<script src="//d3js.org/d3.v4.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<link
+		rel="stylesheet"
+		href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css"
+		integrity="sha256-h20CPZ0QyXlBuAw7A+KluUYx/3pK+c7lYEpqLTlxjYQ="
+		crossorigin="anonymous"
+	/>
+	<title>Visualisation of TLA+ Specifications</title>
+	<link rel="stylesheet" href="styles.css" />
+	<style>
+		.background {
+			fill: #eee;
+		}
+		line {
+			stroke: #fff;
+		}
+		text.active {
+			fill: red;
+		}
+		div.tooltip {
+			position: absolute;
+			text-align: center;
+			width: 150px;
+			padding: 2px;
+			font: 12px sans-serif;
+			background: lightgrey;
+			border: 0px;
+			border-radius: 8px;
+			pointer-events: none;
+		}
+		#uploadLabel {
+			margin-right: 0.5em;
+		}
+		#clear {
+			display: none;
+		}
 
-      #home-button, #explore-button {
-          color: inherit;
-          text-decoration: inherit;
-      }
-   </style>
-   <script src="https://d3js.org/d3.v5.min.js"></script>
-   <body>
-    <div id="navbar">
-      <ul>
-         <li><a href="./graphview.html" id="home-button"><i class="fas fa-sun"></i> Graph view</a></li>
-         <li><a href="./matrixview.html" id="explore-button"><i class="fas fa-columns"></i> Matrix view</a></li>
-      </ul>
-      <hr>
-   </div>
-     <div id="dashboard-main">
-      <div id="toolbar">
-        <h2 class="title">MATRIX VIEW</h2> 
-        <p>
-           <label id="uploadLabel">Upload Graph JSON file</label><input type="file" id="input" class="form-control-file" accept=".json">
-           <button type="button" class="btn btn-danger" id="clear">Clear graph</button>
-        </p>
-        <p>
-        Order: 
-          <select id="order">
-              <option value="group">by Cluster</option>
-              <option value="name">by node ID</option>
-          </select>
-        </p>
-     </div>
-      <script>
-         const inputElement = document.getElementById("input");
-         const clearButton = document.getElementById("clear");
-         
-         inputElement.addEventListener("change", handleFiles, false);
-         clearButton.addEventListener("click", clearDashboard, false);
+		#home-button,
+		#explore-button {
+			color: inherit;
+			text-decoration: inherit;
+		}
+	</style>
+	<script src="https://d3js.org/d3.v5.min.js"></script>
+	<body>
+		<div id="navbar">
+			<ul>
+				<li>
+					<a href="./graphview.html" id="home-button"
+						><i class="fas fa-sun"></i> Graph view</a
+					>
+				</li>
+				<li>
+					<a href="./matrixview.html" id="explore-button"
+						><i class="fas fa-columns"></i> Matrix view</a
+					>
+				</li>
+			</ul>
+			<hr />
+		</div>
+		<div id="dashboard-main">
+			<div id="toolbar">
+				<h2 class="title">MATRIX VIEW</h2>
+				<p>
+					<label id="uploadLabel">Upload Graph JSON file</label
+					><input
+						type="file"
+						id="input"
+						class="form-control-file"
+						accept=".json"
+					/>
+					<button type="button" class="btn btn-danger" id="clear">
+						Clear graph
+					</button>
+				</p>
+				<p>
+					Order:
+					<select id="order">
+						<option value="group">by Cluster</option>
+						<option value="name">by node ID</option>
+					</select>
+				</p>
+			</div>
+			<script>
+				const inputElement = document.getElementById("input");
+				const clearButton = document.getElementById("clear");
 
-        function handleFiles() {
-            const fileList = this.files;
-            const reader = new FileReader();
-            reader.addEventListener('error', (error) => {
-                console.log(error);
-            })
-            reader.addEventListener('load', (event) => {
-                const result = event.target.result;
-                try {
-                    graph = JSON.parse(result);
-                }
-                catch(e) {
-                    console.log(e);
-                }
-                finally {
-                    render(graph);
-                }  
-            });
-            reader.readAsText(fileList[0]);
-            clearButton.style.display = "block";
-        }
+				inputElement.addEventListener("change", handleFiles, false);
+				clearButton.addEventListener("click", clearDashboard, false);
 
-        function clearDashboard()
-         {
-             svg.selectAll("*").remove();
-             document.getElementById("input").value = "";
-             clearButton.style.display = "none";
-         }
+				function handleFiles() {
+					const fileList = this.files;
+					const reader = new FileReader();
+					reader.addEventListener("error", (error) => {
+						console.log(error);
+					});
+					reader.addEventListener("load", (event) => {
+						const result = event.target.result;
+						try {
+							graph = JSON.parse(result);
+						} catch (e) {
+							console.log(e);
+						} finally {
+							render(graph);
+						}
+					});
+					reader.readAsText(fileList[0]);
+					clearButton.style.display = "block";
+				}
 
-         var margin = {top: 40, right: 0, bottom: 10, left: 80},
-             width = 720,
-             height = 720;
-         
-         var x = d3.scaleBand().range([0, width]),
-             z = d3.scaleLinear().domain([0, 4]).clamp(true),
-             c = d3.scaleOrdinal(d3.schemeCategory10);
-         
-         var svg = d3.select("#dashboard-main").append("svg")
-             .attr("width", width + margin.left + margin.right)
-             .attr("height", height + margin.top + margin.bottom)
-             .style("margin-left", -margin.left + "px")
-             .append("g")
-             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-         
-         let div = d3.select("body").append("div") 
-                 .attr("class", "tooltip")       
-                 .style("opacity", 0);
-        
-        function render(graph)
-        {
-          svg.selectAll("*").remove();
-          var matrix = [],
-               nodes = graph.nodes,
-               n = nodes.length;
-           // Compute index per node.
-           nodes.forEach(function(node, i) {
-             node.index = i;
-             node.count = 0;
-             matrix[i] = d3.range(n).map(function(j) { return {x: j, y: i, z: 0}; });
-           });
-         
-           // Convert links to matrix; count character occurrences.
-           graph.links.forEach(function(link) {
-             matrix[link.source][link.target].z += link.value;
-             nodes[link.source].count += link.value;
-             nodes[link.target].count += link.value;
-           });
-         
-             // Precompute the orders.
-             var orders = {
-               name: d3.range(n).sort(function(a, b) { return d3.ascending(nodes[a].id, nodes[b].id); }),
-               group: d3.range(n).sort(function(a, b) { 
-               if (nodes[b].group === nodes[a].group) {
-                 return nodes[a].id - nodes[b].id;
-               }
-               // return d3.ascending(nodes[a].group, nodes[b].group)
-               return nodes[b].group - nodes[a].group; 
-             })
-           };
-         
-           // The default sort order.
-           x.domain(orders.group);
-         
-           const groups = new Array(...(new Set(graph.nodes.map(({group}) => group)))); 
-           const groupMap = graph.nodes.reduce((prev, node) => ({...prev, [node.id]: node.group}), {});
+				function clearDashboard() {
+					svg.selectAll("*").remove();
+					document.getElementById("input").value = "";
+					clearButton.style.display = "none";
+				}
 
-         
-           var nodeIds = new Array(...(new Set(graph.nodes.map(({id}) => id)))); 
-           var nodeMatrix = nodeIds.map(_ => nodeIds);
-           
-           svg.append("rect")
-               .attr("class", "background")
-               .attr("width", width)
-               .attr("height", height);
-         
-         
-           var row = svg.selectAll(".row")
-               .data(matrix)
-               .enter()
-               .append("g")
-               .attr("class", "row")
-               .attr("transform", function(d, i) { return "translate(0," + x(i) + ")"; })
-               .each(eachrow);
-         
-         
-           row.append("line")
-               .attr("x2", width);
-         
-           const textMouseOver = (d, i) => {
-             div.transition()    
-             .duration(200)    
-             .style("opacity", .9);    
-             console.log(d, i);
-             
-             const incomingCount = graph.links.reduce((prevCount, link) => 
-                              prevCount + (link.target.index === i ? 1 : 0), 0);
-             const outcomingCount = graph.links.reduce((prevCount, link) => 
-                              prevCount + (link.source.index === i ? 1 : 0), 0);;
-             div.html(`
-               <h6>Node description</h6>
-             `)  
-             .style("left", (d3.event.pageX) + "px")   
-             .style("top", (d3.event.pageY - 28) + "px") };
-         
-           row.append("text")
-               .attr("x", -6)
-               .attr("y", x.bandwidth() / 2)
-               .attr("dy", ".32em")
-               .attr("text-anchor", "end")
-               .text(function(d, i) { return nodes[i].id })
-               .attr("fill", (d, i) => c(nodes[i].group))
-               .on("mouseover", textMouseOver)
-               .on("mouseout", mouseout);
-         
-           
-           var column = svg.selectAll(".column")
-               .data(matrix)
-               .enter().append("g")
-               .attr("class", "column")
-               .attr("transform", (d, i) => { return "translate(" + x(i) + ")rotate(-90)"; });
-         
-           column.append("line")
-               .attr("x1", -width);
-         
-           column.append("text")
-               .attr("x", 6)
-               .attr("y", x.bandwidth() / 2)
-               .attr("dy", ".32em")
-               .attr("fill", (_, i) => c(nodes[i].group))
-               .attr("text-anchor", "start")
-               .text((d, i) => nodes[i].id)
-               .on("mouseover", textMouseOver)
-               .on("mouseout", mouseout);
-         
-           function eachrow(row) {
-             d3.select(this).selectAll(".cell").remove();
-         
-             var cell = d3.select(this).selectAll(".cell")
-                 .data(row)
-                 .enter()
-                 .append("rect")
-                 .attr("class", "cell")
-                 .attr("x", function(d) { return x(d.x); })
-                 .attr("width", (d) => x.bandwidth() * 0.95)
-                 .attr("height", (d) => x.bandwidth() * 0.95)
-                 .style("fill-opacity", function(d) { 
-                   if (d.z) return 1;
-                   const orderselection = document.getElementById("order").value;
-                   if (orderselection === "group" && nodes[d.x].group === nodes[d.y].group) return 0.4;
-                   return 0;
-                 })
-                 .style("fill", function(d) { 
-                   if (d.z) return "black";
-                   if (nodes[d.x].group === nodes[d.y].group) return c(nodes[d.y].group);
-                   return null;
-                 })
-                 .on("mouseover", (d, i) => {if (d.z) 
-                   mouseover(d, i)
-                 })
-                 .on("mouseout", mouseout);
-        }
-         
-           function mouseover(d, i) {
-             d3.selectAll(".row text").classed("active", function(d, i) { return i == d.y; });
-             d3.selectAll(".column text").classed("active", function(d, i) { return i == d.x; });
-             
-             div.transition()    
-                 .duration(200)    
-                 .style("left", (d3.event.pageX) + "px")   
-                 .style("top", (d3.event.pageY - 28) + "px")
-                 .style("opacity", .9);
-         
-             div.transition()    
-                 .duration(200)    
-                 .style("opacity", .9);    
-                 
-             div.html(`
+				var margin = { top: 40, right: 0, bottom: 10, left: 80 },
+					width = 720,
+					height = 720;
+
+				var x = d3.scaleBand().range([0, width]),
+					z = d3.scaleLinear().domain([0, 4]).clamp(true),
+					c = d3.scaleOrdinal(d3.schemeCategory10);
+
+				var svg = d3
+					.select("#dashboard-main")
+					.append("svg")
+					.attr("width", width + margin.left + margin.right)
+					.attr("height", height + margin.top + margin.bottom)
+					.style("margin-left", -margin.left + "px")
+					.append("g")
+					.attr(
+						"transform",
+						"translate(" + margin.left + "," + margin.top + ")"
+					);
+
+				let div = d3
+					.select("body")
+					.append("div")
+					.attr("class", "tooltip")
+					.style("opacity", 0);
+
+				function render(graph) {
+					svg.selectAll("*").remove();
+					var matrix = [],
+						nodes = graph.nodes,
+						n = nodes.length;
+					// Compute index per node.
+					nodes.forEach(function (node, i) {
+						node.index = i;
+						node.count = 0;
+						matrix[i] = d3.range(n).map(function (j) {
+							return { x: j, y: i, z: 0 };
+						});
+					});
+
+					// Convert links to matrix; count character occurrences.
+					graph.links.forEach(function (link) {
+						// Handle both object references and ID references
+						let sourceIndex, targetIndex;
+
+						if (typeof link.source === "object" && link.source !== null) {
+							sourceIndex = link.source.index;
+						} else {
+							// Find the node index for this source ID
+							sourceIndex = nodes.findIndex((n) => n.id === link.source);
+						}
+
+						if (typeof link.target === "object" && link.target !== null) {
+							targetIndex = link.target.index;
+						} else {
+							// Find the node index for this target ID
+							targetIndex = nodes.findIndex((n) => n.id === link.target);
+						}
+
+						// Only add to matrix if we found valid indices
+						if (sourceIndex >= 0 && targetIndex >= 0) {
+							matrix[sourceIndex][targetIndex].z += 1;
+							nodes[sourceIndex].count += 1;
+							nodes[targetIndex].count += 1;
+						}
+					});
+
+					// Precompute the orders.
+					var orders = {
+						name: d3.range(n).sort(function (a, b) {
+							return d3.ascending(nodes[a].id, nodes[b].id);
+						}),
+						group: d3.range(n).sort(function (a, b) {
+							if (nodes[b].group === nodes[a].group) {
+								return nodes[a].id - nodes[b].id;
+							}
+							// return d3.ascending(nodes[a].group, nodes[b].group)
+							return nodes[b].group - nodes[a].group;
+						}),
+					};
+
+					// The default sort order.
+					x.domain(orders.group);
+
+					const groups = new Array(
+						...new Set(graph.nodes.map(({ group }) => group))
+					);
+					const groupMap = graph.nodes.reduce(
+						(prev, node) => ({ ...prev, [node.id]: node.group }),
+						{}
+					);
+
+					var nodeIds = new Array(...new Set(graph.nodes.map(({ id }) => id)));
+					var nodeMatrix = nodeIds.map((_) => nodeIds);
+
+					svg
+						.append("rect")
+						.attr("class", "background")
+						.attr("width", width)
+						.attr("height", height);
+
+					var row = svg
+						.selectAll(".row")
+						.data(matrix)
+						.enter()
+						.append("g")
+						.attr("class", "row")
+						.attr("transform", function (d, i) {
+							return "translate(0," + x(i) + ")";
+						})
+						.each(eachrow);
+
+					row.append("line").attr("x2", width);
+
+					const textMouseOver = (d, i) => {
+						div.transition().duration(200).style("opacity", 0.9);
+						console.log(d, i);
+
+						const node = nodes[i];
+						const incomingCount = graph.links.reduce((prevCount, link) => {
+							let targetId;
+							if (typeof link.target === "object") {
+								targetId = link.target.id;
+							} else {
+								targetId = link.target;
+							}
+							return prevCount + (targetId === node.id ? 1 : 0);
+						}, 0);
+
+						const outgoingCount = graph.links.reduce((prevCount, link) => {
+							let sourceId;
+							if (typeof link.source === "object") {
+								sourceId = link.source.id;
+							} else {
+								sourceId = link.source;
+							}
+							return prevCount + (sourceId === node.id ? 1 : 0);
+						}, 0);
+
+						// Create a state description based on available node data
+						let stateDescription = "";
+						// Show all properties of the node except common ones
+						const commonProps = ["id", "group", "index", "count"];
+						stateDescription = Object.entries(node)
+							.filter(([key]) => !commonProps.includes(key))
+							.map(([key, value]) => `${key}: ${value}`)
+							.join("<br>");
+
+						// If there are no extra properties, show the ID
+						if (!stateDescription) {
+							stateDescription = `State ID: ${node.id}`;
+						}
+
+						div
+							.html(
+								`
+							<h6>Node: ${node.id}</h6>
+							<br/>
+							<p> Cluster: <strong>${node.group}</strong> </p>
+							<p> Incoming count: <strong>${incomingCount}</strong></p>
+							<p> Outgoing count: <strong>${outgoingCount}</strong></p>
+							<p> State description: <strong>${stateDescription}</strong> </p>
+						`
+							)
+							.style("left", d3.event.pageX + "px")
+							.style("top", d3.event.pageY - 28 + "px");
+					};
+
+					row
+						.append("text")
+						.attr("x", -6)
+						.attr("y", x.bandwidth() / 2)
+						.attr("dy", ".32em")
+						.attr("text-anchor", "end")
+						.text(function (d, i) {
+							return nodes[i].id;
+						})
+						.attr("fill", (d, i) => c(nodes[i].group))
+						.on("mouseover", textMouseOver)
+						.on("mouseout", mouseout);
+
+					var column = svg
+						.selectAll(".column")
+						.data(matrix)
+						.enter()
+						.append("g")
+						.attr("class", "column")
+						.attr("transform", (d, i) => {
+							return "translate(" + x(i) + ")rotate(-90)";
+						});
+
+					column.append("line").attr("x1", -width);
+
+					column
+						.append("text")
+						.attr("x", 6)
+						.attr("y", x.bandwidth() / 2)
+						.attr("dy", ".32em")
+						.attr("fill", (_, i) => c(nodes[i].group))
+						.attr("text-anchor", "start")
+						.text((d, i) => nodes[i].id)
+						.on("mouseover", textMouseOver)
+						.on("mouseout", mouseout);
+
+					function eachrow(row) {
+						d3.select(this).selectAll(".cell").remove();
+
+						var cell = d3
+							.select(this)
+							.selectAll(".cell")
+							.data(row)
+							.enter()
+							.append("rect")
+							.attr("class", "cell")
+							.attr("x", function (d) {
+								return x(d.x);
+							})
+							.attr("width", (d) => x.bandwidth() * 0.95)
+							.attr("height", (d) => x.bandwidth() * 0.95)
+							.style("fill-opacity", function (d) {
+								if (d.z) return 1;
+								const orderselection = document.getElementById("order").value;
+								if (
+									orderselection === "group" &&
+									nodes[d.x].group === nodes[d.y].group
+								)
+									return 0.4;
+								return 0;
+							})
+							.style("fill", function (d) {
+								if (d.z) return "black";
+								if (nodes[d.x].group === nodes[d.y].group)
+									return c(nodes[d.y].group);
+								return null;
+							})
+							.on("mouseover", (d, i) => {
+								if (d.z) mouseover(d, i);
+							})
+							.on("mouseout", mouseout);
+					}
+
+					function mouseover(d, i) {
+						d3.selectAll(".row text").classed("active", function (d, i) {
+							return i == d.y;
+						});
+						d3.selectAll(".column text").classed("active", function (d, i) {
+							return i == d.x;
+						});
+
+						div
+							.transition()
+							.duration(200)
+							.style("left", d3.event.pageX + "px")
+							.style("top", d3.event.pageY - 28 + "px")
+							.style("opacity", 0.9);
+
+						div.transition().duration(200).style("opacity", 0.9);
+
+						// Find the link in the original graph data
+						const sourceId = nodes[d.y].id;
+						const targetId = nodes[d.x].id;
+						const link = graph.links.find(
+							(link) =>
+								(link.source === sourceId ||
+									(link.source && link.source.id === sourceId)) &&
+								(link.target === targetId ||
+									(link.target && link.target.id === targetId))
+						);
+
+						// Create a transition description based on available link data
+						let transitionDescription = "";
+						if (link) {
+							// Show all properties of the link except source and target
+							const commonProps = ["source", "target"];
+							transitionDescription = Object.entries(link)
+								.filter(([key]) => !commonProps.includes(key))
+								.map(([key, value]) => `${key}: ${value}`)
+								.join("<br>");
+
+							// If there are no extra properties, show basic transition info
+							if (!transitionDescription) {
+								transitionDescription = "Direct transition";
+							}
+						} else {
+							transitionDescription = "Transition information not available";
+						}
+
+						div
+							.html(
+								`
                  <br/>
                  <p> Source: ${d.y} </p>
                  <p> Target: ${d.x} </p>
-                 <p> Transition description: <strong>${"#FIXME"}</strong> </p>
-             `)  
-             .style("left", (d3.event.pageX) + "px")   
-             .style("top", (d3.event.pageY - 28) + "px");    
-             
-           }
-         
-           function mouseout() {
-             d3.selectAll("text").classed("active", false);
-             div.transition()    
-                 .duration(500)    
-                 .style("opacity", 0);
-           }
-         
-           d3.select("#order").on("change", function() {
-             clearTimeout(timeout);
-             order(this.value);
-           });
-         
-           function order(value) {
-             x.domain(orders[value]);
-             var t = svg.transition().duration(0);
-         
-             t.selectAll(".row")
-                 .delay(function(d, i) { return x(i); })
-                 .attr("transform", function(d, i) { return "translate(0," + x(i) + ")"; })
-               .selectAll(".cell")
-                 .delay(function(d) { return x(d.x); })
-                 .attr("x", function(d) { return x(d.x); });
-         
-             t.selectAll(".column")
-                 .delay(function(d, i) { return x(i); })
-                 .attr("transform", function(d, i) { return "translate(" + x(i) + ")rotate(-90)"; });
-             
-             row.each(eachrow);
-             }
-         
-           var timeout = setTimeout(function() {
-             order("group");
-             d3.select("#order").property("selectedIndex", 0).node().focus();
-           }, 500);
-         };
-         
-      </script>
-      </div>
-   </body>
+                 <!-- <p> Transition description: <strong>${transitionDescription}</strong> </p> -->
+             `
+							)
+							.style("left", d3.event.pageX + "px")
+							.style("top", d3.event.pageY - 28 + "px");
+					}
+
+					function mouseout() {
+						d3.selectAll("text").classed("active", false);
+						div.transition().duration(500).style("opacity", 0);
+					}
+
+					d3.select("#order").on("change", function () {
+						clearTimeout(timeout);
+						order(this.value);
+					});
+
+					function order(value) {
+						x.domain(orders[value]);
+						var t = svg.transition().duration(0);
+
+						t.selectAll(".row")
+							.delay(function (d, i) {
+								return x(i);
+							})
+							.attr("transform", function (d, i) {
+								return "translate(0," + x(i) + ")";
+							})
+							.selectAll(".cell")
+							.delay(function (d) {
+								return x(d.x);
+							})
+							.attr("x", function (d) {
+								return x(d.x);
+							});
+
+						t.selectAll(".column")
+							.delay(function (d, i) {
+								return x(i);
+							})
+							.attr("transform", function (d, i) {
+								return "translate(" + x(i) + ")rotate(-90)";
+							});
+
+						row.each(eachrow);
+					}
+
+					var timeout = setTimeout(function () {
+						order("group");
+						d3.select("#order").property("selectedIndex", 0).node().focus();
+					}, 500);
+				}
+			</script>
+		</div>
+	</body>
 </html>
