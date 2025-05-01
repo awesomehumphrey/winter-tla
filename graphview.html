@@ -403,7 +403,7 @@
                                  count : graph.nodes.filter(function(n) { return +n.group == groupId; }).length
                              };
                              })
-                             .filter( function(group) { return group.count > 2;})
+                             .filter( function(group) { return group.count >= 1;})
                              .map( function(group) { return group.groupId; });
          
              paths = groups.selectAll('.path_placeholder')
@@ -552,6 +552,18 @@
              
              console.log(node_data);
          
+             // If we don't have enough points for a hull (need at least 3), return a small circle around the first point
+             if (node_coords.length < 3) {
+                 if (node_coords.length === 0) {
+                     return null; // No points at all
+                 }
+                 // For 1-2 points, create a simple circle-like polygon around the first point
+                 var x = node_coords[0][0];
+                 var y = node_coords[0][1];
+                 var r = 20; // Small radius
+                 return [[x-r, y-r], [x+r, y-r], [x+r, y+r], [x-r, y+r]]; // Simple square shape
+             }
+             
              return d3.polygonHull(node_coords);
          };
          
@@ -578,6 +590,10 @@
                      .attr('transform', 'scale(1) translate(0,0)')
                      .attr('d', function(d) {
                          polygon = polygonGenerator(d);      
+                         if (!polygon) {
+                             centers[groupId] = [0, 0]; // Default center if no polygon
+                             return "";
+                         }
                          centroid = d3.polygonCentroid(polygon);
                          centers[groupId] = centroid;
                          
@@ -601,7 +617,11 @@
          
                  clusterLinks
                  .attr('d', (d) => {
-         
+                     // Check if centers exist for both source and target before accessing
+                     if (!centers[d.source] || !centers[d.target]) {
+                         return ""; // Return empty path if centers don't exist
+                     }
+                     
                      var dx = centers[d.target][0] - centers[d.source][0],
                      dy = centers[d.target][1] - centers[d.source][1],
                      dr = Math.sqrt(dx * dx + dy * dy);
