@@ -108,7 +108,26 @@
              if (showHyperLinksOnly.checked)
              {
                  clusterLinkVisible.fill(true);
-                 graph.links.forEach((link) => link.visible = false);
+                 graph.links.forEach((link) => {
+                     if (typeof link.visible === 'undefined') {
+                         link.visible = false;
+                     } else {
+                         link.visible = false;
+                     }
+                 });
+                 ticked();
+             }
+             else
+             {
+                 // Show all links when unchecked
+                 clusterLinkVisible.fill(true);
+                 graph.links.forEach((link) => {
+                     if (typeof link.visible === 'undefined') {
+                         link.visible = true;
+                     } else {
+                         link.visible = true;
+                     }
+                 });
                  ticked();
              }
          }
@@ -267,6 +286,10 @@
              clusterGraph = computeClusterGraph(graph);
              clusterLinkVisible = new Array(clusterGraph.links.length).fill(true);
              
+             // Initialize the visibility of all links based on the "Show hyperlinks only" checkbox
+             graph.links.forEach(link => {
+                 link.visible = !showHyperLinksOnly.checked;
+             });
              
              centroids = svg.append('g')
                      .attr('class', 'centroids')
@@ -325,10 +348,21 @@
                                      console.log(d);
                                      clusterLinkVisible[i] = !clusterLinkVisible[i];
                                      graph.links.forEach((link) => {
-                                         if (link.source.cluster === d.source && link.target.cluster === d.target)
-                                         {
-                                             console.log(link.source.cluster, link.target.cluster);
-                                             link.visible = true;
+                                         if (typeof link.source === 'object' && typeof link.target === 'object') {
+                                             if (link.source.cluster === d.source && link.target.cluster === d.target) {
+                                                 link.visible = !link.visible;
+                                                 console.log("Toggled visibility of link:", link);
+                                             }
+                                         } else {
+                                             // Handle the case where source/target are indices rather than objects
+                                             const sourceNode = graph.nodes.find(n => n.id === link.source);
+                                             const targetNode = graph.nodes.find(n => n.id === link.target);
+                                             if (sourceNode && targetNode && 
+                                                 sourceNode.group === d.source && 
+                                                 targetNode.group === d.target) {
+                                                 link.visible = !link.visible;
+                                                 console.log("Toggled visibility of link by ID:", link);
+                                             }
                                          }
                                      })
                                      ticked();
@@ -574,10 +608,14 @@
                      .attr('x2', function(d) { return d.target.x; })
                      .attr('y2', function(d) { return d.target.y; })
                      .attr('stroke-width', d => {
-                         // return collapsibles[d.source.cluster] || collapsibles[d.target.cluster] ? 0 : (d.visible ? 1 : 0)}
-                         return (d.visible ? 3: 0) 
+                         // Handle undefined visibility - default to visible if hyperlinks only is not checked
+                         if (typeof d.visible === 'undefined') {
+                             return showHyperLinksOnly.checked ? 0 : 3;
                          }
                          );
+                         // Otherwise use the explicit visibility
+                         return (d.visible ? 3 : 0);
+                     });
          
                  circles
                      .attr('opacity', d => collapsibles[d.cluster] ? 0 : 1)
