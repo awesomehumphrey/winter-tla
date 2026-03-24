@@ -182,8 +182,8 @@
          
          let width = 1100,
              height = 700,
-             padding = 100, // separation between same-color circles
-             clusterPadding = 500, // separation between different-color circles
+             padding = 30, // separation between same-color circles
+             clusterPadding = 80, // separation between different-color circles
              maxRadius = height*0.1;
          let scaleFactor = 1.2;
          let color = d3.scaleOrdinal(d3.schemeCategory20);
@@ -516,7 +516,7 @@
                          .force("cluster", clustering)
                          .force("charge", d3.forceManyBody().strength(-300))
                          .on("tick", ticked)
-                         .force("link", d3.forceLink().id(function(d) { return d.id; }).links(graph.links));
+                         .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(50).links(graph.links));
              
              simulation
                  .nodes(nodes)
