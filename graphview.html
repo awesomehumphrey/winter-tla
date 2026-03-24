@@ -275,8 +275,12 @@
              clusterGraph = computeClusterGraph(graph);
              clusterLinkVisible = new Array(clusterGraph.links.length).fill(true);
 
-             // If there are no cluster links, show all individual links by default
-             if (clusterGraph.links.length === 0) {
+             // Show individual links by default if there are no meaningful
+             // inter-cluster links (none at all, or only self-links within same group)
+             var hasInterClusterLinks = clusterGraph.links.some(function(link) {
+                 return link.source !== link.target;
+             });
+             if (!hasInterClusterLinks) {
                  graph.links.forEach((link) => link.visible = true);
              }
 
