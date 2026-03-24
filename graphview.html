@@ -584,7 +584,8 @@
                      var path = paths.filter(function(d) { return d == groupId;})
                      .attr('transform', 'scale(1) translate(0,0)')
                      .attr('d', function(d) {
-                         polygon = polygonGenerator(d);      
+                         polygon = polygonGenerator(d);
+                         if (!polygon) return null;
                          centroid = d3.polygonCentroid(polygon);
                          centers[groupId] = centroid;
                          
@@ -603,12 +604,15 @@
                          );
                      });
          
-                     d3.select(path.node().parentNode).attr('transform', 'translate('  + centroid[0] + ',' + (centroid[1]) + ') scale(' + scaleFactor + ')');
+                     if (path.node() && centroid) {
+                         d3.select(path.node().parentNode).attr('transform', 'translate('  + centroid[0] + ',' + (centroid[1]) + ') scale(' + scaleFactor + ')');
+                     }
                  });
          
                  clusterLinks
                  .attr('d', (d) => {
-         
+                     if (!centers[d.source] || !centers[d.target]) return null;
+
                      var dx = centers[d.target][0] - centers[d.source][0],
                      dy = centers[d.target][1] - centers[d.source][1],
                      dr = Math.sqrt(dx * dx + dy * dy);

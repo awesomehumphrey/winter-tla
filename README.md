@@ -35,4 +35,4 @@ http://localhost:7999/matrixview.html
 
 There is an option to upload datasets into either graph view or matrix view. The datasets are stored in `datasets` folder
 
-**Note**: While the `matrixview` is stable and can handle all sample datasets, the `graphview` only handles `datasets/dataset1-graph-and-matrix.json`. Loading other datasets into `graphview` will cause run-time error. This is a bug and needs to be fixed in the next iterations.
+**Note**: All sample datasets can be loaded into both the `graphview` and `matrixview`.
