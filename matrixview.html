@@ -45,17 +45,23 @@
           display: none;
       }
 
-      #home-button, #explore-button {
+      #home-button, #explore-button, #split-button {
           color: inherit;
           text-decoration: inherit;
       }
    </style>
+   <script>
+      if (new URLSearchParams(window.location.search).has('embedded')) {
+         document.write('<style>html, body { margin: 0; } #navbar, #toolbar { display: none !important; } body { display: block; } #dashboard-main svg { width: 100%; height: auto; margin-left: 0 !important; }</style>');
+      }
+   </script>
    <script src="https://d3js.org/d3.v5.min.js"></script>
    <body>
     <div id="navbar">
       <ul>
          <li><a href="./graphview.html" id="home-button"><i class="fas fa-sun"></i> Graph view</a></li>
          <li><a href="./matrixview.html" id="explore-button"><i class="fas fa-columns"></i> Matrix view</a></li>
+         <li><a href="./splitview.html" id="split-button"><i class="fas fa-th-large"></i> Split view</a></li>
       </ul>
       <hr>
    </div>
@@ -118,9 +124,12 @@
              z = d3.scaleLinear().domain([0, 4]).clamp(true),
              c = d3.scaleOrdinal(d3.schemeCategory10);
          
+         var totalWidth = width + margin.left + margin.right;
+         var totalHeight = height + margin.top + margin.bottom;
          var svg = d3.select("#dashboard-main").append("svg")
-             .attr("width", width + margin.left + margin.right)
-             .attr("height", height + margin.top + margin.bottom)
+             .attr("width", totalWidth)
+             .attr("height", totalHeight)
+             .attr("viewBox", "0 0 " + totalWidth + " " + totalHeight)
              .style("margin-left", -margin.left + "px")
              .append("g")
              .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -323,7 +332,22 @@
              d3.select("#order").property("selectedIndex", 0).node().focus();
            }, 500);
          };
-         
+
+         // Listen for messages from split view
+         window.addEventListener("message", function(event) {
+            if (event.data && event.data.type === "loadJSON") {
+               try {
+                  graph = JSON.parse(event.data.data);
+                  render(graph);
+                  clearButton.style.display = "block";
+               } catch(e) {
+                  console.log(e);
+               }
+            } else if (event.data && event.data.type === "clearDashboard") {
+               clearDashboard();
+            }
+         });
+
       </script>
       </div>
    </body>

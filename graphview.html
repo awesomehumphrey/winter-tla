@@ -63,16 +63,22 @@
       #clear {
           display: none;
       }
-      #home-button, #explore-button {
+      #home-button, #explore-button, #split-button {
           color: inherit;
           text-decoration: inherit;
       }
    </style>
+   <script>
+      if (new URLSearchParams(window.location.search).has('embedded')) {
+         document.write('<style>html, body { margin: 0; } #navbar, #toolbar { display: none !important; } body { display: block; } #dashboard-main svg { width: 100%; height: auto; }</style>');
+      }
+   </script>
    <body>
       <div id="navbar">
          <ul>
             <li><a href="./graphview.html" id="home-button"><i class="fas fa-sun"></i> Graph view</a></li>
             <li><a href="./matrixview.html" id="explore-button"><i class="fas fa-columns"></i> Matrix view</a></li>
+            <li><a href="./splitview.html" id="split-button"><i class="fas fa-th-large"></i> Split view</a></li>
          </ul>
          <hr>
       </div>
@@ -198,6 +204,7 @@
              .append('svg')
              .attr('height', height)
              .attr('width', width)
+             .attr('viewBox', '0 0 ' + width + ' ' + height)
              .append('g')
              .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
          
@@ -616,6 +623,21 @@
                  })
                  .attr("opacity", (_, i) => clusterLinkVisible[i] ? 1 : 0)
              }
+
+         // Listen for messages from split view
+         window.addEventListener("message", function(event) {
+            if (event.data && event.data.type === "loadJSON") {
+               try {
+                  graph = JSON.parse(event.data.data);
+                  render(graph);
+                  clearButton.style.display = "block";
+               } catch(e) {
+                  console.log(e);
+               }
+            } else if (event.data && event.data.type === "clearDashboard") {
+               clearDashboard();
+            }
+         });
       </script>
    </body>
 </html>
