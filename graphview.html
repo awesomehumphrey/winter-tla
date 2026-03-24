@@ -404,12 +404,33 @@
                          `)
                          .style("left", (d3.event.pageX) + "px")
                          .style("top", (d3.event.pageY - 28) + "px");
+                     // Build set of connected node IDs
+                     var connectedIds = {};
+                     connectedIds[d.id] = true;
+                     graph.links.forEach(function(l) {
+                         var sid = typeof l.source === 'object' ? l.source.id : l.source;
+                         var tid = typeof l.target === 'object' ? l.target.id : l.target;
+                         if (sid == d.id) connectedIds[tid] = true;
+                         if (tid == d.id) connectedIds[sid] = true;
+                     });
+                     // Dim non-connected nodes
+                     circles.attr('opacity', function(n) {
+                         if (collapsibles[n.cluster]) return 0;
+                         return connectedIds[n.id] ? 1 : 0.2;
+                     });
+                     if (labels) labels.attr('opacity', function(n) {
+                         if (collapsibles[n.cluster]) return 0;
+                         return connectedIds[n.id] ? 1 : 0.2;
+                     });
                      // Highlight connected edges
                      links.attr('stroke', function(l) {
                          return (l.source.id === d.id || l.target.id === d.id) ? '#E74C3C' : '#BBC';
                      }).attr('stroke-width', function(l) {
                          if (!l.visible) return 0;
                          return (l.source.id === d.id || l.target.id === d.id) ? 4 : 3;
+                     }).attr('stroke-opacity', function(l) {
+                         if (!l.visible) return 0;
+                         return (l.source.id === d.id || l.target.id === d.id) ? 1 : 0.15;
                      });
                      if (window.parent !== window) {
                          window.parent.postMessage({ type: "highlight", nodeId: d.id }, "*");
@@ -419,8 +440,16 @@
                      div.transition()
                          .duration(500)
                          .style("opacity", 0);
+                     circles.attr('opacity', function(n) {
+                         return collapsibles[n.cluster] ? 0 : 1;
+                     });
+                     if (labels) labels.attr('opacity', function(n) {
+                         return collapsibles[n.cluster] ? 0 : 1;
+                     });
                      links.attr('stroke', '#BBC').attr('stroke-width', function(l) {
                          return l.visible ? 3 : 0;
+                     }).attr('stroke-opacity', function(l) {
+                         return l.visible ? 0.6 : 0;
                      });
                      if (window.parent !== window) {
                          window.parent.postMessage({ type: "unhighlight" }, "*");
@@ -675,19 +704,36 @@
 
          function highlightNode(nodeId) {
             if (!circles || !links) return;
+            var connectedIds = {};
+            connectedIds[nodeId] = true;
+            graph.links.forEach(function(l) {
+               var sid = typeof l.source === 'object' ? l.source.id : l.source;
+               var tid = typeof l.target === 'object' ? l.target.id : l.target;
+               if (sid == nodeId) connectedIds[tid] = true;
+               if (tid == nodeId) connectedIds[sid] = true;
+            });
             circles.attr('opacity', function(d) {
                if (collapsibles[d.cluster]) return 0;
-               return (d.id === nodeId) ? 1 : 0.3;
+               return connectedIds[d.id] ? 1 : 0.2;
             });
             if (labels) labels.attr('opacity', function(d) {
                if (collapsibles[d.cluster]) return 0;
-               return (d.id === nodeId) ? 1 : 0.3;
+               return connectedIds[d.id] ? 1 : 0.2;
             });
             links.attr('stroke', function(l) {
-               return (l.source.id === nodeId || l.target.id === nodeId) ? '#E74C3C' : '#BBC';
+               var sid = typeof l.source === 'object' ? l.source.id : l.source;
+               var tid = typeof l.target === 'object' ? l.target.id : l.target;
+               return (sid == nodeId || tid == nodeId) ? '#E74C3C' : '#BBC';
             }).attr('stroke-width', function(l) {
                if (!l.visible) return 0;
-               return (l.source.id === nodeId || l.target.id === nodeId) ? 4 : 3;
+               var sid = typeof l.source === 'object' ? l.source.id : l.source;
+               var tid = typeof l.target === 'object' ? l.target.id : l.target;
+               return (sid == nodeId || tid == nodeId) ? 4 : 3;
+            }).attr('stroke-opacity', function(l) {
+               if (!l.visible) return 0;
+               var sid = typeof l.source === 'object' ? l.source.id : l.source;
+               var tid = typeof l.target === 'object' ? l.target.id : l.target;
+               return (sid == nodeId || tid == nodeId) ? 1 : 0.15;
             });
          }
 
@@ -701,6 +747,8 @@
             });
             links.attr('stroke', '#BBC').attr('stroke-width', function(l) {
                return l.visible ? 3 : 0;
+            }).attr('stroke-opacity', function(l) {
+               return l.visible ? 0.6 : 0;
             });
          }
 
