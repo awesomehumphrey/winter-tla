@@ -305,6 +305,11 @@
                 if (si === d.y && ti === d.x && link.value) linkVal = link.value;
              });
 
+             // Send highlight for the source node to coordinated views
+             if (window.parent !== window) {
+                window.parent.postMessage({ type: "highlight", nodeId: nodes[d.y].id }, "*");
+             }
+
              div.transition()
                  .duration(200)
                  .style("opacity", .9);

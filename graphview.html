@@ -509,12 +509,12 @@
              // create the clustering/collision force simulation
              var simulation = d3
                          .forceSimulation(nodes)
-                         .velocityDecay(0.2)
-                         .force("x", d3.forceX().strength(.005))
-                         .force("y", d3.forceY().strength(.005))
+                         .velocityDecay(0.4)
+                         .force("x", d3.forceX().strength(.05))
+                         .force("y", d3.forceY().strength(.05))
                          .force("collide", collide)
                          .force("cluster", clustering)
-                         .force("charge", d3.forceManyBody().strength(-1000))
+                         .force("charge", d3.forceManyBody().strength(-300))
                          .on("tick", ticked)
                          .force("link", d3.forceLink().id(function(d) { return d.id; }).links(graph.links));
              
