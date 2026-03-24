@@ -156,6 +156,8 @@
            nodes.forEach(function(node, i) {
              idToIndex[node.id] = i;
            });
+           currentIdToIndex = idToIndex;
+           currentNodes = nodes;
 
            // Convert links to matrix; count character occurrences.
            graph.links.forEach(function(link) {
@@ -209,27 +211,34 @@
                .attr("x2", width);
          
            const textMouseOver = (d, i) => {
-             div.transition()    
-             .duration(200)    
-             .style("opacity", .9);    
-             console.log(d, i);
-             
-             const incomingCount = graph.links.reduce((prevCount, link) => 
-                              prevCount + (link.target.index === i ? 1 : 0), 0);
-             const outcomingCount = graph.links.reduce((prevCount, link) => 
-                              prevCount + (link.source.index === i ? 1 : 0), 0);;
+             div.transition()
+             .duration(200)
+             .style("opacity", .9);
+
+             var nodeId = nodes[i].id;
+             var nodeLabel = nodes[i].label || String(nodeId);
              div.html(`
-               <h6>Node description</h6>
-             `)  
-             .style("left", (d3.event.pageX) + "px")   
-             .style("top", (d3.event.pageY - 28) + "px") };
+               <h6>${nodeLabel}</h6>
+               <p>Group: <strong>${nodes[i].group}</strong></p>
+             `)
+             .style("left", (d3.event.pageX) + "px")
+             .style("top", (d3.event.pageY - 28) + "px");
+
+             // Highlight this row/column
+             highlightRowCol(i);
+
+             // Send highlight to parent for coordinated views
+             if (window.parent !== window) {
+                window.parent.postMessage({ type: "highlight", nodeId: nodeId }, "*");
+             }
+           };
          
            row.append("text")
                .attr("x", -6)
                .attr("y", x.bandwidth() / 2)
                .attr("dy", ".32em")
                .attr("text-anchor", "end")
-               .text(function(d, i) { return nodes[i].id })
+               .text(function(d, i) { return nodes[i].label || nodes[i].id })
                .attr("fill", (d, i) => c(nodes[i].group))
                .on("mouseover", textMouseOver)
                .on("mouseout", mouseout);
@@ -250,7 +259,7 @@
                .attr("dy", ".32em")
                .attr("fill", (_, i) => c(nodes[i].group))
                .attr("text-anchor", "start")
-               .text((d, i) => nodes[i].id)
+               .text((d, i) => nodes[i].label || nodes[i].id)
                .on("mouseover", textMouseOver)
                .on("mouseout", mouseout);
          
@@ -285,33 +294,53 @@
            function mouseover(d, i) {
              d3.selectAll(".row text").classed("active", function(d, i) { return i == d.y; });
              d3.selectAll(".column text").classed("active", function(d, i) { return i == d.x; });
-             
-             div.transition()    
-                 .duration(200)    
-                 .style("left", (d3.event.pageX) + "px")   
-                 .style("top", (d3.event.pageY - 28) + "px")
+
+             var srcLabel = nodes[d.y].label || String(nodes[d.y].id);
+             var tgtLabel = nodes[d.x].label || String(nodes[d.x].id);
+             // Find the link value for this edge
+             var linkVal = "";
+             graph.links.forEach(function(link) {
+                var si = idToIndex[link.source];
+                var ti = idToIndex[link.target];
+                if (si === d.y && ti === d.x && link.value) linkVal = link.value;
+             });
+
+             div.transition()
+                 .duration(200)
                  .style("opacity", .9);
-         
-             div.transition()    
-                 .duration(200)    
-                 .style("opacity", .9);    
-                 
              div.html(`
-                 <br/>
-                 <p> Source: ${d.y} </p>
-                 <p> Target: ${d.x} </p>
-                 <p> Transition description: <strong>${"#FIXME"}</strong> </p>
-             `)  
-             .style("left", (d3.event.pageX) + "px")   
-             .style("top", (d3.event.pageY - 28) + "px");    
-             
+                 <p> Source: <strong>${srcLabel}</strong> </p>
+                 <p> Target: <strong>${tgtLabel}</strong> </p>
+                 ${linkVal ? '<p> Action: <strong>' + linkVal + '</strong> </p>' : ''}
+             `)
+             .style("left", (d3.event.pageX) + "px")
+             .style("top", (d3.event.pageY - 28) + "px");
            }
          
-           function mouseout() {
+           function highlightRowCol(idx) {
+             d3.selectAll(".row text").classed("active", function(d, i) { return i === idx; });
+             d3.selectAll(".column text").classed("active", function(d, i) { return i === idx; });
+             // Highlight cells in this row and column
+             d3.selectAll(".cell").style("stroke", function(d) {
+                return (d.y === idx || d.x === idx) ? "#E74C3C" : "none";
+             }).style("stroke-width", function(d) {
+                return (d.y === idx || d.x === idx) ? "2px" : "0";
+             });
+           }
+
+           function unhighlightAllMatrix() {
              d3.selectAll("text").classed("active", false);
-             div.transition()    
-                 .duration(500)    
+             d3.selectAll(".cell").style("stroke", "none").style("stroke-width", "0");
+           }
+
+           function mouseout() {
+             unhighlightAllMatrix();
+             div.transition()
+                 .duration(500)
                  .style("opacity", 0);
+             if (window.parent !== window) {
+                window.parent.postMessage({ type: "unhighlight" }, "*");
+             }
            }
          
            d3.select("#order").on("change", function() {
@@ -343,6 +372,10 @@
            }, 500);
          };
 
+         // Track idToIndex at outer scope for message-based highlighting
+         var currentIdToIndex = {};
+         var currentNodes = [];
+
          // Listen for messages from split view
          window.addEventListener("message", function(event) {
             if (event.data && event.data.type === "loadJSON") {
@@ -355,6 +388,20 @@
                }
             } else if (event.data && event.data.type === "clearDashboard") {
                clearDashboard();
+            } else if (event.data && event.data.type === "highlight") {
+               var idx = currentIdToIndex[event.data.nodeId];
+               if (idx !== undefined) {
+                  d3.selectAll(".row text").classed("active", function(d, i) { return i === idx; });
+                  d3.selectAll(".column text").classed("active", function(d, i) { return i === idx; });
+                  d3.selectAll(".cell").style("stroke", function(d) {
+                     return (d.y === idx || d.x === idx) ? "#E74C3C" : "none";
+                  }).style("stroke-width", function(d) {
+                     return (d.y === idx || d.x === idx) ? "2px" : "0";
+                  });
+               }
+            } else if (event.data && event.data.type === "unhighlight") {
+               d3.selectAll("text").classed("active", false);
+               d3.selectAll(".cell").style("stroke", "none").style("stroke-width", "0");
             }
          });
 

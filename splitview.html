@@ -108,6 +108,21 @@
             splitInput.value = "";
             splitClear.style.display = "none";
          });
+
+         // Forward highlight/unhighlight messages between iframes
+         var graphFrame = document.getElementById("graphFrame");
+         var matrixFrame = document.getElementById("matrixFrame");
+         window.addEventListener("message", function(event) {
+            if (!event.data || !event.data.type) return;
+            if (event.data.type === "highlight" || event.data.type === "unhighlight") {
+               // Forward to the OTHER iframe (not the source)
+               if (event.source === graphFrame.contentWindow) {
+                  matrixFrame.contentWindow.postMessage(event.data, "*");
+               } else if (event.source === matrixFrame.contentWindow) {
+                  graphFrame.contentWindow.postMessage(event.data, "*");
+               }
+            }
+         });
       </script>
    </body>
 </html>
