@@ -151,11 +151,21 @@
              matrix[i] = d3.range(n).map(function(j) { return {x: j, y: i, z: 0}; });
            });
          
+           // Build lookup from node id to array index.
+           var idToIndex = {};
+           nodes.forEach(function(node, i) {
+             idToIndex[node.id] = i;
+           });
+
            // Convert links to matrix; count character occurrences.
            graph.links.forEach(function(link) {
-             matrix[link.source][link.target].z += link.value;
-             nodes[link.source].count += link.value;
-             nodes[link.target].count += link.value;
+             var si = idToIndex[link.source];
+             var ti = idToIndex[link.target];
+             if (si !== undefined && ti !== undefined) {
+               matrix[si][ti].z += 1;
+               nodes[si].count += 1;
+               nodes[ti].count += 1;
+             }
            });
          
              // Precompute the orders.
