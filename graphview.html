@@ -277,29 +277,28 @@
              clusterGraph = computeClusterGraph(graph);
              clusterLinkVisible = new Array(clusterGraph.links.length).fill(true);
 
-             // Show individual links by default if there are no meaningful
-             // inter-cluster links (none at all, or only self-links within same group)
-             var hasInterClusterLinks = clusterGraph.links.some(function(link) {
-                 return link.source !== link.target;
-             });
-             if (!hasInterClusterLinks) {
-                 graph.links.forEach((link) => link.visible = true);
-             }
+             // Show all individual links by default
+             graph.links.forEach((link) => link.visible = true);
 
              
+             // Build centroid data with group id and node count
+             var centroidData = clusterGraph.nodes
+                     .map((count, i) => ({ groupId: i, count: count || 0 }))
+                     .filter(d => d.count > 2);
+
              centroids = svg.append('g')
                      .attr('class', 'centroids')
                      .selectAll('circle')
-                     .data(clusterGraph.nodes.filter(d => d).map((d, i) => i + 1))
+                     .data(centroidData)
                      .enter()
                      .append('circle')
-                     .attr('r', 100)
-                     .attr('fill', d => color(d))
+                     .attr('r', d => Math.max(40, d.count * 20))
+                     .attr('fill', d => color(d.groupId))
                      .attr('opacity', 0.1)
-                     .attr('cx', (d) => 100 * d)
-                     .attr('cy', (d) => 100 * d)
+                     .attr('cx', (d) => 100 * d.groupId)
+                     .attr('cy', (d) => 100 * d.groupId)
                      .on("click", (d) => {
-                         collapsibles[d] = !collapsibles[d];
+                         collapsibles[d.groupId] = !collapsibles[d.groupId];
                          ticked();
                      });
          
@@ -668,7 +667,7 @@
                          // all the path around the center of the 'g' and then
                          // we can scale the 'g' element properly
                          centroids
-                         .filter((d) => d == groupId)
+                         .filter((d) => d.groupId == groupId)
                          .attr("cx", centroid[0])
                          .attr("cy", centroid[1])
                          return valueline(
