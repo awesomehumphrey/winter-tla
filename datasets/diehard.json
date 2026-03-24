@@ -1,0 +1,376 @@
+{
+  "nodes": [
+    {
+      "id": 0,
+      "group": 1,
+      "label": "big=0,small=0"
+    },
+    {
+      "id": 1,
+      "group": 1,
+      "label": "big=0,small=1"
+    },
+    {
+      "id": 2,
+      "group": 1,
+      "label": "big=0,small=2"
+    },
+    {
+      "id": 3,
+      "group": 1,
+      "label": "big=0,small=3"
+    },
+    {
+      "id": 4,
+      "group": 2,
+      "label": "big=1,small=0"
+    },
+    {
+      "id": 5,
+      "group": 2,
+      "label": "big=1,small=3"
+    },
+    {
+      "id": 6,
+      "group": 3,
+      "label": "big=2,small=0"
+    },
+    {
+      "id": 7,
+      "group": 3,
+      "label": "big=2,small=3"
+    },
+    {
+      "id": 8,
+      "group": 4,
+      "label": "big=3,small=0"
+    },
+    {
+      "id": 9,
+      "group": 4,
+      "label": "big=3,small=3"
+    },
+    {
+      "id": 10,
+      "group": 5,
+      "label": "big=4,small=0"
+    },
+    {
+      "id": 11,
+      "group": 5,
+      "label": "big=4,small=3"
+    },
+    {
+      "id": 12,
+      "group": 6,
+      "label": "big=5,small=0"
+    },
+    {
+      "id": 13,
+      "group": 6,
+      "label": "big=5,small=1"
+    },
+    {
+      "id": 14,
+      "group": 6,
+      "label": "big=5,small=2"
+    },
+    {
+      "id": 15,
+      "group": 6,
+      "label": "big=5,small=3"
+    }
+  ],
+  "links": [
+    {
+      "source": 0,
+      "target": 12,
+      "value": "FillBig"
+    },
+    {
+      "source": 0,
+      "target": 3,
+      "value": "FillSmall"
+    },
+    {
+      "source": 12,
+      "target": 15,
+      "value": "FillSmall"
+    },
+    {
+      "source": 12,
+      "target": 0,
+      "value": "EmptyBig"
+    },
+    {
+      "source": 12,
+      "target": 7,
+      "value": "BigToSmall"
+    },
+    {
+      "source": 3,
+      "target": 15,
+      "value": "FillBig"
+    },
+    {
+      "source": 3,
+      "target": 0,
+      "value": "EmptySmall"
+    },
+    {
+      "source": 3,
+      "target": 8,
+      "value": "SmallToBig"
+    },
+    {
+      "source": 15,
+      "target": 3,
+      "value": "EmptyBig"
+    },
+    {
+      "source": 15,
+      "target": 12,
+      "value": "EmptySmall"
+    },
+    {
+      "source": 7,
+      "target": 15,
+      "value": "FillBig"
+    },
+    {
+      "source": 7,
+      "target": 3,
+      "value": "EmptyBig"
+    },
+    {
+      "source": 7,
+      "target": 6,
+      "value": "EmptySmall"
+    },
+    {
+      "source": 7,
+      "target": 12,
+      "value": "SmallToBig"
+    },
+    {
+      "source": 8,
+      "target": 12,
+      "value": "FillBig"
+    },
+    {
+      "source": 8,
+      "target": 9,
+      "value": "FillSmall"
+    },
+    {
+      "source": 8,
+      "target": 0,
+      "value": "EmptyBig"
+    },
+    {
+      "source": 8,
+      "target": 3,
+      "value": "BigToSmall"
+    },
+    {
+      "source": 6,
+      "target": 12,
+      "value": "FillBig"
+    },
+    {
+      "source": 6,
+      "target": 7,
+      "value": "FillSmall"
+    },
+    {
+      "source": 6,
+      "target": 0,
+      "value": "EmptyBig"
+    },
+    {
+      "source": 6,
+      "target": 2,
+      "value": "BigToSmall"
+    },
+    {
+      "source": 9,
+      "target": 15,
+      "value": "FillBig"
+    },
+    {
+      "source": 9,
+      "target": 3,
+      "value": "EmptyBig"
+    },
+    {
+      "source": 9,
+      "target": 8,
+      "value": "EmptySmall"
+    },
+    {
+      "source": 9,
+      "target": 13,
+      "value": "SmallToBig"
+    },
+    {
+      "source": 2,
+      "target": 14,
+      "value": "FillBig"
+    },
+    {
+      "source": 2,
+      "target": 3,
+      "value": "FillSmall"
+    },
+    {
+      "source": 2,
+      "target": 0,
+      "value": "EmptySmall"
+    },
+    {
+      "source": 2,
+      "target": 6,
+      "value": "SmallToBig"
+    },
+    {
+      "source": 13,
+      "target": 15,
+      "value": "FillSmall"
+    },
+    {
+      "source": 13,
+      "target": 1,
+      "value": "EmptyBig"
+    },
+    {
+      "source": 13,
+      "target": 12,
+      "value": "EmptySmall"
+    },
+    {
+      "source": 13,
+      "target": 9,
+      "value": "BigToSmall"
+    },
+    {
+      "source": 14,
+      "target": 15,
+      "value": "FillSmall"
+    },
+    {
+      "source": 14,
+      "target": 2,
+      "value": "EmptyBig"
+    },
+    {
+      "source": 14,
+      "target": 12,
+      "value": "EmptySmall"
+    },
+    {
+      "source": 14,
+      "target": 11,
+      "value": "BigToSmall"
+    },
+    {
+      "source": 1,
+      "target": 13,
+      "value": "FillBig"
+    },
+    {
+      "source": 1,
+      "target": 3,
+      "value": "FillSmall"
+    },
+    {
+      "source": 1,
+      "target": 0,
+      "value": "EmptySmall"
+    },
+    {
+      "source": 1,
+      "target": 4,
+      "value": "SmallToBig"
+    },
+    {
+      "source": 11,
+      "target": 15,
+      "value": "FillBig"
+    },
+    {
+      "source": 11,
+      "target": 3,
+      "value": "EmptyBig"
+    },
+    {
+      "source": 11,
+      "target": 10,
+      "value": "EmptySmall"
+    },
+    {
+      "source": 11,
+      "target": 14,
+      "value": "SmallToBig"
+    },
+    {
+      "source": 4,
+      "target": 12,
+      "value": "FillBig"
+    },
+    {
+      "source": 4,
+      "target": 5,
+      "value": "FillSmall"
+    },
+    {
+      "source": 4,
+      "target": 0,
+      "value": "EmptyBig"
+    },
+    {
+      "source": 4,
+      "target": 1,
+      "value": "BigToSmall"
+    },
+    {
+      "source": 10,
+      "target": 12,
+      "value": "FillBig"
+    },
+    {
+      "source": 10,
+      "target": 11,
+      "value": "FillSmall"
+    },
+    {
+      "source": 10,
+      "target": 0,
+      "value": "EmptyBig"
+    },
+    {
+      "source": 10,
+      "target": 5,
+      "value": "BigToSmall"
+    },
+    {
+      "source": 5,
+      "target": 15,
+      "value": "FillBig"
+    },
+    {
+      "source": 5,
+      "target": 3,
+      "value": "EmptyBig"
+    },
+    {
+      "source": 5,
+      "target": 4,
+      "value": "EmptySmall"
+    },
+    {
+      "source": 5,
+      "target": 10,
+      "value": "SmallToBig"
+    }
+  ]
+}
