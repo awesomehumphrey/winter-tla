@@ -6,6 +6,18 @@
 \usepackage{balance}
 \usepackage[hidelinks]{hyperref}
 \usepackage{booktabs}
+\usepackage{listings}
+\lstset{
+  basicstyle=\footnotesize\ttfamily,
+  numbers=left,
+  numberstyle=\tiny,
+  numbersep=5pt,
+  frame=single,
+  breaklines=true,
+  captionpos=b,
+  xleftmargin=2em,
+  framexleftmargin=1.5em
+}
 
 \begin{document}
 
@@ -30,9 +42,11 @@ formal methods, TLA+, visualization, state machine, adjacency matrix, coordinate
 
 \section{Introduction}
 
-Formal system specification provides significant advantages for mission-critical systems engineering. Specifications written in formal languages are concise, precise, and amenable to automated verification through model checking and theorem proving. Among formal specification languages, TLA+ (Temporal Logic of Actions)~\cite{lamport2003specifying, lamport2009pluscal} has emerged as one of the most widely adopted in industry. Amazon Web Services uses TLA+ to verify the correctness of complex distributed systems including DynamoDB, S3, and EBS~\cite{newcombe2015amazon}, while Microsoft has applied TLA+ to the development of safety-critical fault-tolerant middleware~\cite{resch2017tla}. The TLC model checker~\cite{yuan1999model} enables engineers to exhaustively enumerate all reachable states and transitions for a given specification, providing confidence that the system behaves correctly under all possible scenarios.
+Formal system specification provides significant advantages for mission-critical systems engineering. Mission-critical systems must comply with rigorous standards---such as DO-178C for airborne software and ISO~26262 for automotive functional safety---that rely heavily on mathematical formalisms to establish correctness. Formal specifications are concise, precise, and amenable to automated verification through model checking and theorem proving. This allows engineers to locate errors in the specification far more precisely---sometimes identifying very challenging faults---than the code of the target system, compared to conventional testing techniques.
 
-However, TLA+ specifications require deep expertise in temporal logic, and the state spaces they produce are inherently difficult to comprehend. Each state in a TLA+ specification represents a complete assignment of values to all specification variables, and each transition corresponds to an action that transforms one state into another. Even for moderately complex specifications, the number of reachable states grows combinatorially with the number of variables and their domains---a phenomenon known as the state explosion problem~\cite{liu2005model}. For example, a specification with ten variables each capable of holding ten distinct values has a theoretical state space of $10^{10}$ states. While the TLC model checker can enumerate these states efficiently, presenting the results to engineers in a comprehensible manner remains an open challenge.
+Among formal specification languages, TLA+ (Temporal Logic of Actions)~\cite{lamport2003specifying, lamport2009pluscal} has emerged as one of the most widely adopted in industry. TLA+ is a domain-specific language for expressing formal properties of systems based on temporal logic, providing far greater expressiveness and reasoning capability than conventional software design modeling tools. Amazon Web Services uses TLA+ to verify the correctness of complex distributed systems including DynamoDB, S3, and EBS~\cite{newcombe2015amazon}, while Microsoft has applied TLA+ to the development of safety-critical fault-tolerant middleware~\cite{resch2017tla}. The TLC model checker~\cite{yuan1999model} enables engineers to exhaustively enumerate all reachable states and transitions for a given specification, and code developed based on the formal specification is thus far more reliable and errors can be located far earlier and proactively than post-implementation testing techniques.
+
+However, these specifications require deep expertise in temporal logic. For many systems engineers, TLA+ specifications and models are very hard to read and review, limiting the usability of the methods. In most cases, having the right formal methods experts to write specifications does not solve the problem, as the wider development team needs to be able to deeply understand the formal specifications. We want to aid these engineers by applying visualization techniques to translate TLA+ state spaces into intuitive visual representations---such as state machine diagrams, which have been used for decades and are well understood by practitioners and engineers alike~\cite{harel1987statecharts, harel1988visual}. However, the state spaces produced by model checking are inherently difficult to comprehend. Each state in a TLA+ specification represents a complete assignment of values to all specification variables, and each transition corresponds to an action that transforms one state into another. Even for moderately complex specifications, the number of reachable states grows combinatorially with the number of variables and their domains---a phenomenon known as the state explosion problem~\cite{liu2005model}. For example, a specification with ten variables each capable of holding ten distinct values has a theoretical state space of $10^{10}$ states. While the TLC model checker can enumerate these states efficiently, presenting the results to engineers in a comprehensible manner remains an open challenge.
 
 The current state of TLA+ visualization is limited. The TLA+ Toolbox provides textual output from the TLC model checker, listing states and transitions in a sequential format that becomes overwhelming for large specifications. As an initial step toward addressing this gap, we developed a prototype tool that renders TLA+ state spaces as interactive state machine diagrams using a force-directed layout, supporting stepping through states and visual debugging. However, this prototype used a standard force-directed layout without clustering or alternative representations, and its visualizations degenerated into illegible ``hairball'' diagrams beyond a few dozen states (Fig.~\ref{fig:hairball}). This scalability limitation is well-documented in the graph visualization literature: force-directed layouts produce visual clutter at scale due to edge crossings, node overlaps, and the difficulty of perceiving structure in dense graphs~\cite{harel1988visual, herman2000graph}. Diehl~\cite{diehl2007softvis} provides a comprehensive treatment of software visualization techniques, but existing approaches focus primarily on source code structure and runtime behavior rather than formal specification state spaces.
 
@@ -67,6 +81,29 @@ The remainder of this paper is organized as follows. Section~\ref{sec:background
 \label{sec:background}
 
 TLA+ is a formal specification language created by Leslie Lamport for specifying and reasoning about concurrent and distributed systems~\cite{lamport2003specifying}. The language is based on the Temporal Logic of Actions, which combines temporal logic with a theory of actions (state transitions) to describe system behavior. TLA+ specifications describe a system as a state machine: an initial state predicate defines the set of possible starting states, and a next-state relation defines how the system can transition from one state to another. Each state is a complete assignment of values to all specification variables, and each transition is triggered by an action---a named predicate that constrains the relationship between the current state and the next state.
+
+\subsection{A Motivating Example: HourClock}
+
+To illustrate both the power and the comprehension challenge of TLA+ specifications, we use the HourClock example from Lamport's \textit{Specifying Systems}~\cite{lamport2003specifying}. This specification formally describes the behavior of a clock that increments the state variable \texttt{hr} by 1 every iteration until it reaches 12, at which point it cycles back to 1. Fig.~\ref{fig:hourclock_spec} shows the complete TLA+ specification.
+
+\begin{figure}[t]
+\begin{lstlisting}[language={},morekeywords={MODULE,EXTENDS,VARIABLE,THEOREM,IF,THEN,ELSE}]
+---- MODULE HourClock ----
+EXTENDS Naturals
+VARIABLE hr
+HCini == hr \in (1 .. 12)
+HCnxt == hr' = IF hr # 12
+                THEN hr + 1
+                ELSE 1
+HC == HCini /\ [][HCnxt]_hr
+THEOREM HC => []HCini
+====
+\end{lstlisting}
+\caption{The HourClock TLA+ specification~\cite{lamport2003specifying}. The variable \texttt{hr} ranges from 1 to 12, and the action \texttt{HCnxt} increments it cyclically.}
+\label{fig:hourclock_spec}
+\end{figure}
+
+While HourClock is a very simple and basic example of a TLA+ specification, to an untrained eye it is already hard to comprehend: the temporal logic operators (\texttt{[]}, \texttt{[]} with subscript) and the primed variable notation (\texttt{hr'}) are unfamiliar to most software engineers. With larger, more complex system specifications involving multiple variables, guards, and concurrent actions, the difficulty increases dramatically. The system state in this case is just the variable \texttt{hr}, which can take values 1 to 12, producing 12 states connected in a cycle. When the TLC model checker enumerates this state space, it produces a directed graph with 12 nodes and 12 edges---simple enough to visualize, but illustrative of the state machine structure that our tool renders.
 
 \subsection{The TLC Model Checker}
 
@@ -203,11 +240,11 @@ To address these challenges, we explored three design approaches, documented in 
 
 We now describe the design of our visualization tool, presenting the three views and their interaction mechanisms. The tool is implemented as a web application using HTML, CSS, and JavaScript, with D3.js~\cite{bostock2011d3} providing the visualization primitives. The tool runs entirely in the browser, requiring no server-side computation or installation.
 
-\subsection{System Architecture}
+\subsection{Tool Overview}
 
 The tool consists of three HTML pages: \texttt{graphview.html} (clustered graph view), \texttt{matrixview.html} (adjacency matrix view), and \texttt{splitview.html} (coordinated split view). Each view can be used independently or in combination through the split view. The split view embeds the graph and matrix views as iframes and coordinates their interactions through the browser's \texttt{postMessage} API.
 
-Users load a TLA+ state space by uploading a JSON file through a file input control. In the split view, the uploaded file is forwarded to both embedded views via \texttt{postMessage}, ensuring that both views display the same data. A clear button resets both views simultaneously. Navigation links in the toolbar allow users to switch between the three views.
+Users load a TLA+ state space by uploading the JSON file through a file input control. In the split view, the uploaded file is forwarded to both embedded views via \texttt{postMessage}, ensuring that both views display the same data. A clear button resets both views simultaneously. Navigation links in the toolbar allow users to switch between the three views.
 
 \begin{figure*}[t]
 \centering
@@ -284,7 +321,33 @@ The HourClock specification~\cite{lamport2003specifying} is a canonical example 
 
 \subsection{Surveillance System: Multi-State with Labeled Transitions}
 
-The surveillance system specification models a simplified distributed surveillance system derived from an industry project. The system can be in one of three states---\textit{UNKNOWN}, \textit{OK}, and \textit{FAILED}---and transitions between them via two actions: \texttt{report\_received} (indicating a sensor message was received) and \texttt{timeout} (indicating no message was received within a time window). The state space consists of 3 states, each in its own cluster (since the only variable is \texttt{state}, and each state has a unique value), connected by 4 transitions.
+The surveillance system specification models a simplified and obfuscated version of a distributed surveillance system derived from a large industry project built from a number of distributed sensors. This is a challenging system to both understand and debug due to the event-based and asynchronous nature of the code implementing the system. At any given time, the system should be in one state: Unknown, Running (OK), or Failed. When the surveillance system starts, it initially goes to the Unknown state. It then waits for messages from one of the sensors for 10 seconds. If a message is received during this time, it goes to the Running state; otherwise, if nothing happens, it goes to the Failed state. The system can alternate between the Running and Failed states: if no message is received in a ten-second window it goes to Failed, and it goes back to Running when a message is received. Fig.~\ref{fig:surveillance_spec} shows the TLA+ specification.
+
+\begin{figure}[t]
+\begin{lstlisting}[language={},morekeywords={EXTENDS,CONSTANTS,VARIABLES,Init,Next}]
+EXTENDS Naturals
+CONSTANTS UNKNOWN, OK, FAILED
+
+VARIABLES state
+
+report_received ==
+    /\ state' = OK
+
+timeout ==
+    /\ state' = FAILED
+
+Init ==
+    /\ state = UNKNOWN
+
+Next ==
+    \/ report_received
+    \/ timeout
+\end{lstlisting}
+\caption{Simplified TLA+ specification of the Surveillance System. The single variable \texttt{state} can hold values UNKNOWN, OK, or FAILED, with two actions defining the transitions.}
+\label{fig:surveillance_spec}
+\end{figure}
+
+The state space consists of 3 states, each in its own cluster (since the only variable is \texttt{state}, and each state has a unique value), connected by 4 transitions.
 
 \textbf{Graph view (T1, T2, T3).} The graph view (Fig.~\ref{fig:surveillance_split}, left) displays three labeled nodes---\textit{UNKNOWN}, \textit{OK}, and \textit{FAILED}---with directed edges between them. The visualization resembles a traditional state machine diagram, which is appropriate for this small specification. Each node is colored differently (since each belongs to a different cluster), and the labels are directly visible on the nodes. The spatial layout clearly shows that \textit{UNKNOWN} is the initial state (no incoming transitions from the initial set), \textit{OK} and \textit{FAILED} are reachable from \textit{UNKNOWN}, and \textit{OK} and \textit{FAILED} can transition to each other. Engineers familiar with state machine notation can read this visualization immediately.
 
@@ -296,7 +359,9 @@ The surveillance system specification models a simplified distributed surveillan
 
 \subsection{Die Hard Water Jugs: State Explosion and Clustering}
 
-The Die Hard water jugs problem is a well-known combinatorial puzzle that models two water jugs with capacities of 5 gallons (big) and 3 gallons (small), with six possible actions: \texttt{FillBig}, \texttt{FillSmall}, \texttt{EmptyBig}, \texttt{EmptySmall}, \texttt{BigToSmall} (pour from big to small), and \texttt{SmallToBig} (pour from small to big). The state space consists of 16 reachable states and 58 transitions---already dense enough to produce significant visual clutter in a flat node-link diagram. States are grouped by the value of the \texttt{big} variable into six clusters: \texttt{big=0} (4 states), \texttt{big=1} (2 states), \texttt{big=2} (2 states), \texttt{big=3} (2 states), \texttt{big=4} (2 states), and \texttt{big=5} (4 states).
+The Die Hard water jugs problem is a well-known combinatorial puzzle (featured in the film \textit{Die Hard with a Vengeance}) that models two water jugs with capacities of 5 gallons (\texttt{big}) and 3 gallons (\texttt{small}). The specification defines two variables and six possible actions: \texttt{FillBig} (fill the big jug to capacity), \texttt{FillSmall} (fill the small jug), \texttt{EmptyBig} (empty the big jug), \texttt{EmptySmall} (empty the small jug), \texttt{BigToSmall} (pour from big to small until small is full or big is empty), and \texttt{SmallToBig} (pour from small to big). Each state is defined by the pair of values $(\mathtt{big}, \mathtt{small})$, representing the current water level in each jug. The goal is to reach the state $\mathtt{big}=4, \mathtt{small}=0$.
+
+The TLC model checker enumerates 16 reachable states and 58 transitions for this specification---already dense enough to produce significant visual clutter in a flat node-link diagram. This specification is particularly interesting for visualization because it exhibits the state explosion phenomenon at a scale that is still amenable to visual exploration: with only two variables, the state space is comprehensible in principle, but the density of transitions (an average of 3.6 outgoing transitions per state) makes a flat node-link diagram illegible. States are grouped by the value of the \texttt{big} variable into six clusters: \texttt{big=0} (4 states), \texttt{big=1} (2 states), \texttt{big=2} (2 states), \texttt{big=3} (2 states), \texttt{big=4} (2 states), and \texttt{big=5} (4 states).
 
 \textbf{Graph view (T1, T2).} The clustered force-directed layout spatially separates the six clusters, with each cluster rendered in a distinct color. Clusters with three or more members (\texttt{big=0} and \texttt{big=5}) are enclosed in convex hulls, providing clear visual boundaries. The engineer can immediately observe (T1) that the state space has a non-trivial structure with multiple clusters of varying sizes, and (T2) identify which clusters correspond to which big-jug values. The two largest clusters (big=0 and big=5) are at opposite ends of the variable's range, each containing states where the small jug holds different amounts of water. The spatial separation of clusters makes it easy to see that inter-cluster transitions (which change the big-jug value) dominate the visualization, as dense bundles of edges connect the clusters.
 
