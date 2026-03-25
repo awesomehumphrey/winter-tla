@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "skills": {
+    "academic-deep-research": {
+      "source": "kesslerio/academic-deep-research-clawhub-skill",
+      "sourceType": "github",
+      "computedHash": "1e5ef85717aa1016a8be7ae5b747bb72c05b8932e353381b5910a30fef1b94b3"
+    },
+    "academic-research-writer": {
+      "source": "endigo/claude-skills",
+      "sourceType": "github",
+      "computedHash": "229d37b33edb8d684aa75827ce84e4eb9ef0fd1961c3d5404cd77b77e81ba2f5"
+    },
+    "academic-researcher": {
+      "source": "shubhamsaboo/awesome-llm-apps",
+      "sourceType": "github",
+      "computedHash": "16dd0121beefcbb1dba0652f0a37fd5511380c8be7ae69270222913483b00bbc"
+    },
+    "research-paper-writer": {
+      "source": "ailabs-393/ai-labs-claude-skills",
+      "sourceType": "github",
+      "computedHash": "67be14e704ff0c2972e4fcfd164bffa4504898590ed43276d6ada1a376934748"
+    }
+  }
+}
