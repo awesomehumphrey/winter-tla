@@ -196,27 +196,27 @@ We represent this data in a JSON format compatible with the D3.js graph library,
 
 We identified several data characteristics that are specific to TLA+ state spaces and influence visualization design:
 
-\begin{description}
-\item[C1. Variable-based clustering.] States naturally group by shared variable values. Unlike general graphs where community detection algorithms must infer structure, TLA+ state spaces have a semantically meaningful grouping defined by the specification variables. For example, in a specification with variables \texttt{big} and \texttt{small}, states can be grouped by the value of \texttt{big}, producing clusters that correspond to different ``big jug'' levels.
+\begin{itemize}
+\item[\textbf{C1.}] \textbf{Variable-based clustering.} States naturally group by shared variable values. Unlike general graphs where community detection algorithms must infer structure, TLA+ state spaces have a semantically meaningful grouping defined by the specification variables. For example, in a specification with variables \texttt{big} and \texttt{small}, states can be grouped by the value of \texttt{big}, producing clusters that correspond to different ``big jug'' levels.
 
-\item[C2. Dense inter-cluster connectivity.] TLA+ state spaces often have high connectivity between clusters, as actions that change the grouping variable create transitions between clusters. In the Die Hard water jugs specification, for instance, the \texttt{FillBig} and \texttt{EmptyBig} actions create transitions between all clusters. This density makes node-link diagrams particularly problematic, as inter-cluster edges dominate the visualization.
+\item[\textbf{C2.}] \textbf{Dense inter-cluster connectivity.} TLA+ state spaces often have high connectivity between clusters, as actions that change the grouping variable create transitions between clusters. In the Die Hard water jugs specification, for instance, the \texttt{FillBig} and \texttt{EmptyBig} actions create transitions between all clusters. This density makes node-link diagrams particularly problematic, as inter-cluster edges dominate the visualization.
 
-\item[C3. Action-labeled transitions.] Each transition carries an action label that describes the operation performed. These labels are essential for transition inspection (T3) and path tracing (T4), as they tell the engineer what the system does at each step.
+\item[\textbf{C3.}] \textbf{Action-labeled transitions.} Each transition carries an action label that describes the operation performed. These labels are essential for transition inspection (T3) and path tracing (T4), as they tell the engineer what the system does at each step.
 
-\item[C4. Moderate scale.] Real-world TLA+ specifications that are amenable to exhaustive model checking typically produce state spaces with tens to low hundreds of states. Specifications with thousands of states are common in industrial use, but the most common use case for visual exploration involves specifications with 10--200 states. Our tool targets this range, where the state space is too large for textual inspection but small enough for visual representation with appropriate abstraction.
-\end{description}
+\item[\textbf{C4.}] \textbf{Moderate scale.} Real-world TLA+ specifications that are amenable to exhaustive model checking typically produce state spaces with tens to low hundreds of states. Specifications with thousands of states are common in industrial use, but the most common use case for visual exploration involves specifications with 10--200 states. Our tool targets this range, where the state space is too large for textual inspection but small enough for visual representation with appropriate abstraction.
+\end{itemize}
 
 \subsection{Design Challenges}
 
 Based on our task analysis and data characterization, we identified three design challenges specific to TLA+ state space visualization:
 
-\begin{description}
-\item[D1. Mismatch between topology and semantics.] The spatial layout of a force-directed graph does not necessarily reflect the semantic structure of the state space. States that share variable values (and thus belong to the same semantic cluster) may be placed far apart in the layout, while semantically unrelated states may be placed close together. This challenge corresponds to challenge C1 identified by Wongsuphasawat et al.~\cite{wongsuphasawat2018tensorflow} for TensorFlow graphs, where graph topology does not align with the semantic hierarchy defined by namespaces.
+\begin{itemize}
+\item[\textbf{D1.}] \textbf{Mismatch between topology and semantics.} The spatial layout of a force-directed graph does not necessarily reflect the semantic structure of the state space. States that share variable values (and thus belong to the same semantic cluster) may be placed far apart in the layout, while semantically unrelated states may be placed close together. This challenge corresponds to challenge C1 identified by Wongsuphasawat et al.~\cite{wongsuphasawat2018tensorflow} for TensorFlow graphs, where graph topology does not align with the semantic hierarchy defined by namespaces.
 
-\item[D2. Visual clutter from dense connectivity.] The dense inter-cluster connectivity characteristic of TLA+ state spaces (C2) causes severe visual clutter in node-link diagrams. With 16 states and 58 transitions (as in the Die Hard specification), a flat force-directed layout produces an illegible tangle of edges. Even with clustering, the number of inter-cluster edges can overwhelm the visualization.
+\item[\textbf{D2.}] \textbf{Visual clutter from dense connectivity.} The dense inter-cluster connectivity characteristic of TLA+ state spaces (C2) causes severe visual clutter in node-link diagrams. With 16 states and 58 transitions (as in the Die Hard specification), a flat force-directed layout produces an illegible tangle of edges. Even with clustering, the number of inter-cluster edges can overwhelm the visualization.
 
-\item[D3. Task diversity.] The four tasks identified in our task analysis require different visual representations. Overview (T1) and cluster identification (T2) benefit from spatial layouts that show cluster structure, while transition inspection (T3) benefits from a representation where individual connections are easy to read, and path tracing (T4) benefits from both spatial and structural representations. No single view optimally supports all four tasks.
-\end{description}
+\item[\textbf{D3.}] \textbf{Task diversity.} The four tasks identified in our task analysis require different visual representations. Overview (T1) and cluster identification (T2) benefit from spatial layouts that show cluster structure, while transition inspection (T3) benefits from a representation where individual connections are easy to read, and path tracing (T4) benefits from both spatial and structural representations. No single view optimally supports all four tasks.
+\end{itemize}
 
 \subsection{Design Rationale}
 
