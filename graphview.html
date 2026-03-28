@@ -331,7 +331,6 @@
                      .attr("fill", "none")
                      .attr("stroke", "#BBC")
                      .attr("stroke-opacity", 0.6)
-                     .attr("marker-end", "url(#end)")
                      .on("mouseover", function(d, i) {
                          console.log(d);
                          div.transition()
@@ -449,10 +448,12 @@
                          return (l.source.id === d.id || l.target.id === d.id) ? '#E74C3C' : '#BBC';
                      }).attr('stroke-width', function(l) {
                          if (!l.visible) return 0;
-                         return (l.source.id === d.id || l.target.id === d.id) ? 4 : 3;
+                         return (l.source.id === d.id || l.target.id === d.id) ? 4 : 2;
                      }).attr('stroke-opacity', function(l) {
                          if (!l.visible) return 0;
                          return (l.source.id === d.id || l.target.id === d.id) ? 1 : 0.15;
+                     }).attr('marker-end', function(l) {
+                         return (l.source.id === d.id || l.target.id === d.id) ? 'url(#end)' : null;
                      });
                      if (window.parent !== window) {
                          window.parent.postMessage({ type: "highlight", nodeId: d.id }, "*");
@@ -472,7 +473,7 @@
                          return l.visible ? 2 : 0;
                      }).attr('stroke-opacity', function(l) {
                          return l.visible ? 0.6 : 0;
-                     });
+                     }).attr('marker-end', null);
                      if (window.parent !== window) {
                          window.parent.postMessage({ type: "unhighlight" }, "*");
                      }
