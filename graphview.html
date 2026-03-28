@@ -33,11 +33,10 @@
       border-radius: 8px;     
       pointer-events: none;     
       }
-      .links line {
-      stroke: #BBC;
-      stroke-opacity: 0.6;
+      .links line, .links path {
+      fill: none;
       }
-      path {
+      .groups path {
       fill-opacity: .1;
       stroke-opacity: 1;
       }
@@ -209,10 +208,11 @@
          svgRoot.append('defs').append('marker')
              .attr('id', 'end')
              .attr('viewBox', '0 -5 10 10')
-             .attr('refX', 18)
+             .attr('refX', 10)
              .attr('refY', 0)
-             .attr('markerWidth', 6)
-             .attr('markerHeight', 6)
+             .attr('markerWidth', 10)
+             .attr('markerHeight', 10)
+             .attr('markerUnits', 'userSpaceOnUse')
              .attr('orient', 'auto')
              .append('path')
              .attr('d', 'M0,-5L10,0L0,5')
@@ -293,6 +293,12 @@
              // Show all individual links by default
              graph.links.forEach((link) => link.visible = true);
 
+             // Mark bidirectional pairs so we can curve them apart
+             var linkSet = new Set(graph.links.map(l => `${l.source}-${l.target}`));
+             graph.links.forEach((link) => {
+                 link.bidir = link.source !== link.target && linkSet.has(`${link.target}-${link.source}`);
+             });
+
              
              // Build centroid data with group id and node count
              var centroidData = clusterGraph.nodes
@@ -317,30 +323,34 @@
          
              links = svg
                      .append("g")
-                     .attr("class", "links") 
-                     .selectAll("line")
+                     .attr("class", "links")
+                     .selectAll("path")
                      .data(graph.links)
                      .enter()
-                     .append("line")
+                     .append("path")
+                     .attr("fill", "none")
+                     .attr("stroke", "#BBC")
+                     .attr("stroke-opacity", 0.6)
+                     .attr("marker-end", "url(#end)")
                      .on("mouseover", function(d, i) {
                          console.log(d);
-                         div.transition()    
-                             .duration(200)    
-                             .style("opacity", .9);    
-                         
+                         div.transition()
+                             .duration(200)
+                             .style("opacity", .9);
+
                          div.html(`
                              <h6>Link: ${i}</h6>
                              <br/>
                              <p> Source cluster: <strong>${d.source.index}</strong></p>
                              <p> Target cluster: <strong>${d.target.index}</strong></p>
-                             `)  
-                         .style("left", (d3.event.pageX) + "px")   
-                         .style("top", (d3.event.pageY - 28) + "px");  
-                         })          
-                     .on("mouseout", function(d) {   
-                         div.transition()    
-                             .duration(500)    
-                             .style("opacity", 0); 
+                             `)
+                         .style("left", (d3.event.pageX) + "px")
+                         .style("top", (d3.event.pageY - 28) + "px");
+                         })
+                     .on("mouseout", function(d) {
+                         div.transition()
+                             .duration(500)
+                             .style("opacity", 0);
                      });
          
              clusterLinks = svg.append('g')
@@ -350,7 +360,7 @@
                                  .enter()
                                  .append("path")
                                  .attr("stroke-width", d => 3 * d.count)
-                                 .attr("marker-end", "url(#end)")
+                                 
                                  .on("click", (d, i) => {
                                      // toggle the visibility of the cluster links
                                      console.log(d);
@@ -459,7 +469,7 @@
                          return collapsibles[n.cluster] ? 0 : 1;
                      });
                      links.attr('stroke', '#BBC').attr('stroke-width', function(l) {
-                         return l.visible ? 3 : 0;
+                         return l.visible ? 2 : 0;
                      }).attr('stroke-opacity', function(l) {
                          return l.visible ? 0.6 : 0;
                      });
@@ -644,16 +654,26 @@
          };
          
          function ticked() {
-                 links.attr("marker-end", "url(#end)")
-                     .attr('x1', function(d) { return d.source.x; })
-                     .attr('y1', function(d) { return d.source.y; })
-                     .attr('x2', function(d) { return d.target.x; })
-                     .attr('y2', function(d) { return d.target.y; })
-                     .attr('stroke-width', d => {
-                         // return collapsibles[d.source.cluster] || collapsibles[d.target.cluster] ? 0 : (d.visible ? 1 : 0)}
-                         return (d.visible ? 3: 0) 
+                 links.attr('d', function(d) {
+                         var sx = d.source.x, sy = d.source.y;
+                         var tx = d.target.x, ty = d.target.y;
+                         var dx = tx - sx, dy = ty - sy;
+                         var dr = Math.sqrt(dx * dx + dy * dy);
+                         if (dr === 0) return null;
+                         var offset = 22;
+                         var sxA = sx + (dx / dr) * offset;
+                         var syA = sy + (dy / dr) * offset;
+                         var txA = tx - (dx / dr) * offset;
+                         var tyA = ty - (dy / dr) * offset;
+                         if (d.bidir) {
+                             var cx = (sxA + txA) / 2 - (dy / dr) * 40;
+                             var cy = (syA + tyA) / 2 + (dx / dr) * 40;
+                             return 'M' + sxA + ',' + syA + ' Q' + cx + ',' + cy + ' ' + txA + ',' + tyA;
+                         } else {
+                             return 'M' + sxA + ',' + syA + ' L' + txA + ',' + tyA;
                          }
-                         );
+                     })
+                     .attr('stroke-width', d => (d.visible ? 2 : 0));
          
                  circles
                      .attr('opacity', d => collapsibles[d.cluster] ? 0 : 1)
@@ -758,7 +778,7 @@
                return collapsibles[d.cluster] ? 0 : 1;
             });
             links.attr('stroke', '#BBC').attr('stroke-width', function(l) {
-               return l.visible ? 3 : 0;
+               return l.visible ? 2 : 0;
             }).attr('stroke-opacity', function(l) {
                return l.visible ? 0.6 : 0;
             });
