@@ -316,7 +316,7 @@
              // Build centroid data with group id and node count
              var centroidData = clusterGraph.nodes
                      .map((count, i) => ({ groupId: i, count: count || 0 }))
-                     .filter(d => d.count > 2);
+                     .filter(d => d.count > 1);
 
              centroids = svg.append('g')
                      .attr('class', 'centroids')
@@ -521,7 +521,7 @@
                                  count : graph.nodes.filter(function(n) { return +n.group == groupId; }).length
                              };
                              })
-                             .filter( function(group) { return group.count > 2;})
+                             .filter( function(group) { return group.count > 1;})
                              .map( function(group) { return group.groupId; });
          
              paths = groups.selectAll('.path_placeholder')
@@ -714,7 +714,19 @@
                      .attr('transform', 'scale(1) translate(0,0)')
                      .attr('d', function(d) {
                          polygon = polygonGenerator(d);
-                         if (!polygon) return null;
+                         if (!polygon) {
+                             // Fewer than 3 nodes: compute midpoint manually and position centroid circle
+                             var node_data = circles.filter(function(n) { return n.cluster == groupId; }).data();
+                             if (node_data.length >= 2) {
+                                 var mx = node_data.reduce((s, n) => s + n.x, 0) / node_data.length;
+                                 var my = node_data.reduce((s, n) => s + n.y, 0) / node_data.length;
+                                 centroid = [mx, my];
+                                 centers[groupId] = centroid;
+                                 centroids.filter((d) => d.groupId == groupId)
+                                     .attr("cx", mx).attr("cy", my);
+                             }
+                             return null;
+                         }
                          centroid = d3.polygonCentroid(polygon);
                          centers[groupId] = centroid;
                          
