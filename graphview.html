@@ -200,12 +200,25 @@
              m = 10, // number of distinct clusters
              clusters = new Array(m);
          
-         let svg = d3.select('#dashboard-main')
+         let svgRoot = d3.select('#dashboard-main')
              .append('svg')
              .attr('height', height)
              .attr('width', width)
-             .attr('viewBox', '0 0 ' + width + ' ' + height)
-             .append('g')
+             .attr('viewBox', '0 0 ' + width + ' ' + height);
+
+         svgRoot.append('defs').append('marker')
+             .attr('id', 'end')
+             .attr('viewBox', '0 -5 10 10')
+             .attr('refX', 18)
+             .attr('refY', 0)
+             .attr('markerWidth', 6)
+             .attr('markerHeight', 6)
+             .attr('orient', 'auto')
+             .append('path')
+             .attr('d', 'M0,-5L10,0L0,5')
+             .attr('fill', '#999');
+
+         let svg = svgRoot.append('g')
              .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
          
          // Define the div for the tooltip
