@@ -295,8 +295,21 @@
 
              // Mark bidirectional pairs so we can curve them apart
              var linkSet = new Set(graph.links.map(l => `${l.source}-${l.target}`));
+             var seenPairs = new Set();
              graph.links.forEach((link) => {
-                 link.bidir = link.source !== link.target && linkSet.has(`${link.target}-${link.source}`);
+                 var fwd = `${link.source}-${link.target}`;
+                 var rev = `${link.target}-${link.source}`;
+                 link.bidir = link.source !== link.target && linkSet.has(rev);
+                 if (link.bidir) {
+                     if (seenPairs.has(rev)) {
+                         link.bidirSecondary = true;
+                     } else {
+                         link.bidirSecondary = false;
+                         seenPairs.add(fwd);
+                     }
+                 } else {
+                     link.bidirSecondary = false;
+                 }
              });
 
              
@@ -448,12 +461,17 @@
                          return (l.source.id === d.id || l.target.id === d.id) ? '#E74C3C' : '#BBC';
                      }).attr('stroke-width', function(l) {
                          if (!l.visible) return 0;
-                         return (l.source.id === d.id || l.target.id === d.id) ? 4 : 2;
+                         var connected = l.source.id === d.id || l.target.id === d.id;
+                         if (connected) return 4;
+                         if (l.bidirSecondary) return 0;
+                         return 2;
                      }).attr('stroke-opacity', function(l) {
                          if (!l.visible) return 0;
-                         return (l.source.id === d.id || l.target.id === d.id) ? 1 : 0.15;
+                         var connected = l.source.id === d.id || l.target.id === d.id;
+                         return connected ? 1 : 0.15;
                      }).attr('marker-end', function(l) {
-                         return (l.source.id === d.id || l.target.id === d.id) ? 'url(#end)' : null;
+                         var connected = l.source.id === d.id || l.target.id === d.id;
+                         return connected ? 'url(#end)' : null;
                      });
                      if (window.parent !== window) {
                          window.parent.postMessage({ type: "highlight", nodeId: d.id }, "*");
@@ -470,7 +488,8 @@
                          return collapsibles[n.cluster] ? 0 : 1;
                      });
                      links.attr('stroke', '#BBC').attr('stroke-width', function(l) {
-                         return l.visible ? 2 : 0;
+                         if (!l.visible || l.bidirSecondary) return 0;
+                         return l.bidir ? 3 : 2;
                      }).attr('stroke-opacity', function(l) {
                          return l.visible ? 0.6 : 0;
                      }).attr('marker-end', null);
@@ -674,7 +693,10 @@
                              return 'M' + sxA + ',' + syA + ' L' + txA + ',' + tyA;
                          }
                      })
-                     .attr('stroke-width', d => (d.visible ? 2 : 0));
+                     .attr('stroke-width', function(d) {
+                        if (!d.visible || d.bidirSecondary) return 0;
+                        return d.bidir ? 3 : 2;
+                    });
          
                  circles
                      .attr('opacity', d => collapsibles[d.cluster] ? 0 : 1)
@@ -761,12 +783,19 @@
                if (!l.visible) return 0;
                var sid = typeof l.source === 'object' ? l.source.id : l.source;
                var tid = typeof l.target === 'object' ? l.target.id : l.target;
-               return (sid == nodeId || tid == nodeId) ? 4 : 3;
+               var connected = sid == nodeId || tid == nodeId;
+               if (connected) return 4;
+               if (l.bidirSecondary) return 0;
+               return l.bidir ? 3 : 2;
             }).attr('stroke-opacity', function(l) {
                if (!l.visible) return 0;
                var sid = typeof l.source === 'object' ? l.source.id : l.source;
                var tid = typeof l.target === 'object' ? l.target.id : l.target;
                return (sid == nodeId || tid == nodeId) ? 1 : 0.15;
+            }).attr('marker-end', function(l) {
+               var sid = typeof l.source === 'object' ? l.source.id : l.source;
+               var tid = typeof l.target === 'object' ? l.target.id : l.target;
+               return (sid == nodeId || tid == nodeId) ? 'url(#end)' : null;
             });
          }
 
@@ -779,10 +808,11 @@
                return collapsibles[d.cluster] ? 0 : 1;
             });
             links.attr('stroke', '#BBC').attr('stroke-width', function(l) {
-               return l.visible ? 2 : 0;
+               if (!l.visible || l.bidirSecondary) return 0;
+               return l.bidir ? 3 : 2;
             }).attr('stroke-opacity', function(l) {
                return l.visible ? 0.6 : 0;
-            });
+            }).attr('marker-end', null);
          }
 
          // Listen for messages from split view
