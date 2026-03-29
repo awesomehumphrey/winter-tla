@@ -160,9 +160,9 @@ While HourClock is a very simple example, to an untrained eye, the temporal logi
 \label{fig:hourclock}
 \end{figure}
 
-\subsection{Die Hard Water Jugs: State Explosion and Clustering}
+\subsection{Die Hard Water Jugs: Clustering and Dense Transitions}
 
-The Die Hard water jugs problem models two water jugs with capacities of 5 gallons (\texttt{big}) and 3 gallons (\texttt{small}), with six possible actions: \texttt{FillBig}, \texttt{FillSmall}, \texttt{EmptyBig}, \texttt{EmptySmall}, \texttt{BigToSmall}, and \texttt{SmallToBig}. The TLC model checker enumerates 16 reachable states and 58 transitions, already dense enough to produce significant visual clutter in a flat node-link diagram. States are grouped by the value of the \texttt{big} variable into six clusters: \texttt{big=0} (4 states), \texttt{big=1} (2 states), \texttt{big=2} (2 states), \texttt{big=3} (2 states), \texttt{big=4} (2 states), and \texttt{big=5} (4 states). See Fig.~\ref{fig:splitview}.
+The specification models two jugs (5 and 3 gallons) with six actions (\texttt{FillBig}, \texttt{FillSmall}, \texttt{EmptyBig}, \texttt{EmptySmall}, \texttt{BigToSmall}, \texttt{SmallToBig}). States are grouped by the value of \texttt{big} into six clusters (\texttt{big=0} through \texttt{big=5}). With an average of 3.6 outgoing transitions per state, a flat node-link layout produces an illegible tangle with no discernible structure.
 
 \begin{figure*}[!ht]
 \centering
@@ -171,19 +171,11 @@ The Die Hard water jugs problem models two water jugs with capacities of 5 gallo
 \label{fig:splitview}
 \end{figure*}
 
+In Fig.~\ref{fig:splitview} (left), the \textbf{clustered graph view (T1, T2)} makes cluster structure immediately legible. Each cluster is enclosed in a colour-coded convex hull; the two largest clusters (\texttt{big=0} and \texttt{big=5}, each with four states) appear at opposite ends of the variable's range. The arc connecting them is among the thickest, correctly encoding that \texttt{FillBig} from any \texttt{big=0} state reaches \texttt{big=5} directly---the single most common transition type. This arc thickness encodes a structural insight that is invisible in a flat layout. Within clusters, nodes representing states with \texttt{big=1} or \texttt{big=2} are small two-state clusters, reflecting the constrained interactions possible at those jug levels. The spatial grouping allows an engineer to immediately identify which value of \texttt{big} represents the goal (\texttt{big=4}) and which clusters are likely predecessors, before inspecting any individual transition.
 
-\textbf{Graph view (T1, T2).} The clustered force-directed layout spatially separates the six clusters, with each cluster rendered in a distinct colour. Clusters with two or more members are enclosed in convex hulls, providing clear visual boundaries. Aggregate cluster-level edges connect cluster centroids with curved arcs whose thickness encodes the number of individual transitions. The engineer can observe (T1) that the state space has a non-trivial structure with multiple clusters of varying sizes, and (T2) identify which clusters correspond to which \texttt{big}-jug values. Clicking a cluster-level edge reveals the individual node-to-node transitions between those clusters, enabling drill-down from the overview.
+In Fig.~\ref{fig:splitview} (right), the \textbf{matrix view (T2, T3)} reveals a rich block structure invisible in the graph. Intra-cluster transitions appear as dense coloured blocks along the diagonal---clearly visible for \texttt{big=5} (top-left, a dense $4 \times 4$ block) and \texttt{big=0} (bottom-right). Off-diagonal filled cells show inter-cluster transitions; their asymmetric distribution confirms the directed nature of the graph. Two structural properties are immediately readable without hovering: boundary states where one or both jugs are completely full or empty have visibly fewer filled cells per row (fewer enabled actions); and no row is entirely empty (every state has at least one successor). These properties are impossible to verify at a glance in the graph view.
 
-
-
-\textbf{Matrix view (T1, T2, T3).} The adjacency matrix, ordered by cluster membership, reveals a rich block structure. Intra-cluster transitions appear as dense blocks along the diagonal. The matrix makes several structural properties immediately visible that would be difficult to discern in the graph view: (1)~most states have four outgoing transitions, but boundary states where one or both jugs are completely full or empty have fewer; (2)~the transition pattern is not symmetric, reflecting the directed nature of the state transitions; (3)~certain cluster pairs have dense connectivity (e.g., transitions between \texttt{big=0} and \texttt{big=5} are common because \texttt{FillBig} from any state with \texttt{big=0} reaches \texttt{big=5}).
-
-
-
-
-\textbf{Coordinated view (T3, T4).} The coordinated view enables comprehensive analysis. Consider an engineer investigating how to reach the goal state \texttt{big=4,small=0}; the solution to the Die Hard puzzle. The engineer can locate this state in the graph view (in the \texttt{big=4} cluster) and hover over it, causing the matrix view to highlight the corresponding row and column. By inspecting the predecessor states in the matrix and moving backward step by step, the engineer can incrementally trace a path from the initial state to the goal. At each step, the graph view provides spatial context showing where each state sits relative to its cluster, while the matrix view provides precise connectivity information.
-
-\textbf{Insight.} For this complex specification with 16 states and 58 transitions, neither the graph view nor the matrix view alone provides a complete understanding. The coordinated split view combines both strengths, enabling engineers to navigate the state space effectively by cross-referencing between representations.
+The \textbf{coordinated view (T3, T4)} enables path tracing toward the goal state \texttt{big=4,small=0}. Hovering this state in the graph highlights its column in the matrix (predecessor states) and row (successor states). Stepping backward through predecessors---re-hovering each to reveal its own incoming transitions---traces the solution path incrementally. At each step the graph provides spatial context (which cluster each predecessor belongs to) while the matrix provides precise connectivity (exactly which states feed into it and via which actions shown in the cell tooltip). Neither view alone supports this workflow: the graph lacks the precision for step-by-step verification, and the matrix lacks the spatial orientation to situate each predecessor in the broader state space.
 
 
 
