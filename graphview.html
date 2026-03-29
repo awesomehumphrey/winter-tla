@@ -324,7 +324,7 @@
                      .data(centroidData)
                      .enter()
                      .append('circle')
-                     .attr('r', d => Math.max(40, d.count * 20))
+                     .attr('r', d => Math.max(60, d.count * 20))
                      .attr('fill', d => color(d.groupId))
                      .attr('opacity', 0.1)
                      .attr('cx', (d) => 100 * d.groupId)
