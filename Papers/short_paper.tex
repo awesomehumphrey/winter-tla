@@ -1,5 +1,6 @@
 \documentclass[conference]{IEEEtran}
 \usepackage{graphicx}
+\graphicspath{{../figures/}}
 \usepackage{cite}
 \usepackage{amsmath}
 \usepackage{url}
@@ -123,7 +124,14 @@ We demonstrate our tool on two TLA+ specifications drawn from the formal methods
 
 \subsection{HourClock: Simple Cyclic Behaviour}
 
-The HourClock specification~\cite{lamport2003specifying} models a clock cycling through values 1 to 12 via a single action \texttt{HCnxt}. The state space consists of 12 states in a single cluster connected in a cycle. The graph view displays all 12 nodes in a single cluster within a convex hull. The matrix view reveals the cyclic structure with much greater clarity: a diagonal band of filled cells one step above the main diagonal, plus a single cell at position $(12,1)$ representing the wrap-around transition. An engineer can verify at a glance that the specification is deterministic and complete. In the split view, hovering over a specific state (e.g., state \texttt{hr=6}) immediately highlights the corresponding row and column in the matrix, confirming that state 6 has exactly one incoming transition (from state 5) and one outgoing transition (to state 7). \textbf{Insight.} For this regular, single-cluster specification, the matrix view is more informative than the graph view, supporting the finding of Ghoniem et al.~\cite{ghoniem2004comparison} that matrix representations are superior for tasks involving precise connectivity assessment.
+The HourClock specification~\cite{lamport2003specifying} models a clock cycling through values 1 to 12 via a single action \texttt{HCnxt}. The state space consists of 12 states in a single cluster connected in a cycle. The graph view (Fig.~\ref{fig:hourclock}, left) displays all 12 nodes in a single cluster within a convex hull. The matrix view (Fig.~\ref{fig:hourclock}, right) reveals the cyclic structure with much greater clarity: a diagonal band of filled cells one step above the main diagonal, plus a single cell at position $(12,1)$ representing the wrap-around transition. An engineer can verify at a glance that the specification is deterministic and complete. In the split view, hovering over a specific state (e.g., state \texttt{hr=6}) immediately highlights the corresponding row and column in the matrix, confirming that state 6 has exactly one incoming transition (from state 5) and one outgoing transition (to state 7). \textbf{Insight.} For this regular, single-cluster specification, the matrix view is more informative than the graph view, supporting the finding of Ghoniem et al.~\cite{ghoniem2004comparison} that matrix representations are superior for tasks involving precise connectivity assessment.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{hourclock_split.png}
+\caption{The coordinated split view for the HourClock specification. Left: 12 nodes in a single cluster arranged by force-directed layout. Right: adjacency matrix showing the cyclic pattern as a diagonal band one step above the main diagonal.}
+\label{fig:hourclock}
+\end{figure}
 
 \subsection{Die Hard Water Jugs: State Explosion and Clustering}
 
@@ -139,7 +147,7 @@ The Die Hard water jugs problem models two water jugs with capacities of 5 gallo
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\textwidth]{figures/splitview_diehard.png}
+\includegraphics[width=\textwidth]{diehard_split.png}
 \caption{The coordinated split view showing the Die Hard water jugs specification (16 states, 58 transitions). Left: clustered force-directed graph with six clusters (one per \texttt{big}-jug value), colour-coded by cluster membership, with convex hulls delineating cluster boundaries and aggregate cluster-level edges whose thickness encodes transition count. Right: adjacency matrix ordered by cluster membership, with filled cells indicating transitions and coloured diagonal blocks marking cluster boundaries. Hovering a node in either view highlights connected edges and states in both views.}
 \label{fig:splitview}
 \end{figure*}
