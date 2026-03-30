@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Flat Force-Directed Graph</title>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <style>
+        body { margin: 0; font-family: sans-serif; }
+        svg { width: 100%; height: 100vh; }
+        .node circle { stroke: #333; stroke-width: 1.5px; fill: #69b3a2; }
+        .node text { font-size: 10px; pointer-events: none; }
+        .link { stroke: #999; stroke-opacity: 0.6; fill: none; }
+        #controls { padding: 10px; }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <label>Upload JSON file</label>
+        <input type="file" id="fileInput" accept=".json">
+    </div>
+    <svg></svg>
+    <script>
+        var svg = d3.select("svg"),
+            width = window.innerWidth,
+            height = window.innerHeight;
+
+        svg.attr("width", width).attr("height", height);
+
+        var g = svg.append("g");
+
+        var simulation = d3.forceSimulation()
+            .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(50))
+            .force("charge", d3.forceManyBody().strength(-100))
+            .force("center", d3.forceCenter(width / 2, height / 2));
+
+        document.getElementById("fileInput").addEventListener("change", function() {
+            var file = this.files[0];
+            if (!file) return;
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var graph = JSON.parse(e.target.result);
+                render(graph);
+            };
+            reader.readAsText(file);
+        });
+
+        function render(graph) {
+            g.selectAll("*").remove();
+
+            svg.select("defs").remove();
+            svg.append("defs").append("marker")
+                .attr("id", "arrow")
+                .attr("viewBox", "0 -5 10 10")
+                .attr("refX", 10)
+                .attr("refY", 0)
+                .attr("markerWidth", 8)
+                .attr("markerHeight", 8)
+                .attr("markerUnits", "userSpaceOnUse")
+                .attr("orient", "auto")
+                .append("path")
+                .attr("d", "M0,-5L10,0L0,5")
+                .attr("fill", "#999");
+
+            // Detect bidirectional pairs
+            var linkSet = new Set(graph.links.map(function(l) {
+                return l.source + "-" + l.target;
+            }));
+            graph.links.forEach(function(l) {
+                var rev = l.target + "-" + l.source;
+                l.bidir = linkSet.has(rev);
+            });
+
+            var link = g.append("g")
+                .selectAll("path")
+                .data(graph.links)
+                .enter().append("path")
+                .attr("class", "link")
+                .attr("marker-end", "url(#arrow)");
+
+            var node = g.append("g")
+                .selectAll(".node")
+                .data(graph.nodes)
+                .enter().append("g")
+                .attr("class", "node")
+                .call(d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended));
+
+            node.append("circle").attr("r", 16);
+
+            node.append("text")
+                .attr("dy", 4)
+                .attr("text-anchor", "middle")
+                .text(function(d) { return d.label || d.id; });
+
+            simulation.nodes(graph.nodes).on("tick", ticked);
+            simulation.force("link").links(graph.links);
+            simulation.alpha(1).restart();
+
+            function ticked() {
+                link.attr("d", function(d) {
+                    var sx = d.source.x, sy = d.source.y;
+                    var tx = d.target.x, ty = d.target.y;
+                    var dx = tx - sx, dy = ty - sy;
+                    var dr = Math.sqrt(dx * dx + dy * dy);
+                    if (dr === 0) return null;
+                    var offset = 18;
+                    var sxA = sx + (dx / dr) * offset;
+                    var syA = sy + (dy / dr) * offset;
+                    var txA = tx - (dx / dr) * offset;
+                    var tyA = ty - (dy / dr) * offset;
+                    if (d.bidir) {
+                        var cx = (sxA + txA) / 2 - (dy / dr) * 30;
+                        var cy = (syA + tyA) / 2 + (dx / dr) * 30;
+                        return "M" + sxA + "," + syA + " Q" + cx + "," + cy + " " + txA + "," + tyA;
+                    }
+                    return "M" + sxA + "," + syA + " L" + txA + "," + tyA;
+                });
+
+                node.attr("transform", function(d) {
+                    return "translate(" + d.x + "," + d.y + ")";
+                });
+            }
+        }
+
+        function dragstarted(d) {
+            if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x; d.fy = d.y;
+        }
+        function dragged(d) { d.fx = d3.event.x; d.fy = d3.event.y; }
+        function dragended(d) {
+            if (!d3.event.active) simulation.alphaTarget(0);
+            d.fx = null; d.fy = null;
+        }
+    </script>
+</body>
+</html>
