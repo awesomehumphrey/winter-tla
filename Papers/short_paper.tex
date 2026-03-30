@@ -19,15 +19,12 @@
   xleftmargin=2em,
   framexleftmargin=1.5em
 }
-% \usepackage{float}
-% \renewcommand{\topfraction}{0.9}
-% \renewcommand{\textfraction}{0.05}
-% \renewcommand{\floatpagefraction}{0.8}
-\usepackage{placeins}
+
+
 
 \begin{document}
 
-\title{Coordinated Graph and Matrix Views for TLA+ State Space Exploration: A Design Study}
+\title{Coordinated Graph and Matrix Views for TLA+ State Space Comprehension: A Design Study}
 
 \author{
 \IEEEauthorblockN{Anonymous Author(s)}
@@ -95,7 +92,7 @@ From our experience deploying TLA+ specifications in industry projects, we ident
 
 \subsection{Data Characterisation}
 
-The TLC model checker produces a directed graph $G = (V, E)$. Each state is characterised by a unique identifier, a label describing its variable assignments, and a cluster identifier derived from the value of one or more grouping variables. We identified four data characteristics specific to TLA+ state spaces: \textbf{C1.}~Variable-based clustering (states naturally group by shared variable values); \textbf{C2.}~Dense inter-cluster connectivity (actions that change the grouping variable create transitions between clusters); \textbf{C3.}~Action-labelled transitions; and \textbf{C4.}~Moderate scale (the most common use case involves specifications with 10--200 states).
+The TLC model checker produces a directed graph $G = (V, E)$ where each vertex $v \in V$ is a state and each directed edge $(u, v) \in E$ is a transition. Each state is characterised by a unique identifier, a label describing its variable assignments, and a cluster identifier derived from the value of one or more grouping variables. We identified four data characteristics specific to TLA+ state spaces: \textbf{C1.}~Variable-based clustering (states naturally group by shared variable values); \textbf{C2.}~Dense inter-cluster connectivity (actions that change the grouping variable create transitions between clusters); \textbf{C3.}~Action-labelled transitions; and \textbf{C4.}~Moderate scale (the most common use case involves specifications with 10--200 states).
 
 \subsection{Design Challenges and Rationale}
 
@@ -129,7 +126,10 @@ We demonstrate our tool on two TLA+ specifications drawn from the formal methods
 
 \subsection{HourClock: Simple Cyclic Behaviour}
 
-The HourClock specification~\cite{lamport2003specifying} is a canonical TLA+ example: a single variable \texttt{hr} cycles through values 1 to 12 via one action, producing 12 states in a single cluster. Fig.~\ref{fig:hourclock_spec} shows the TLA+ specification.
+
+The HourClock specification~\cite{lamport2003specifying} is a canonical TLA+ example: a single variable \texttt{hr} cycles through values 1 to 12 governed by a single action HCnxt, producing 12 states in a single cluster. Fig.~\ref{fig:hourclock_spec} shows the TLA+ specification.
+
+
 
 \begin{figure}[t]
 \begin{lstlisting}[language={},morekeywords={MODULE,EXTENDS,VARIABLE,IF,THEN,ELSE,THEOREM}]
@@ -151,12 +151,6 @@ THEOREM HC => []HCini
 \label{fig:hourclock_spec}
 \end{figure}
 
-Fig.~\ref{fig:hourclock} illustrates a key insight about when each representation is most valuable. In the graph view (left), the 12 nodes are enclosed in one convex hull and arranged roughly in a circle by the force simulation---but the exact ordering around the ring depends on simulation convergence and is not guaranteed to reflect the logical 1--12 sequence. Confirming the cyclic ordering requires manually tracing each edge, a task that scales poorly even for this simple specification.
-
-The matrix view (right) reveals the specification's structure unambiguously. The pattern is distinctive: a diagonal band of filled cells exactly one step above the main diagonal, plus a single isolated cell at position $(12, 1)$ for the wrap-around. This pattern is immediately recognisable as a deterministic cycle---every state has exactly one outgoing and one incoming transition, and no state is a dead end. An engineer can verify in seconds that the specification is deterministic, complete, and correctly cyclic. No edge tracing is required. This finding directly aligns with Ghoniem et al.~\cite{ghoniem2004comparison}: for specifications where precise connectivity assessment matters, the matrix is not merely comparable to the graph---it is strictly superior.
-
-The coordinated view adds confirmation for T3: hovering \texttt{hr=6} in the graph immediately highlights row~6 and column~6 in the matrix, confirming one incoming transition (from \texttt{hr=5}) and one outgoing (to \texttt{hr=7}). For this regular specification the coordination is not essential---the matrix alone suffices---but it demonstrates the interaction protocol that becomes critical for the complex, multi-cluster case below.
-
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/hourclock_split.png}
@@ -164,9 +158,6 @@ The coordinated view adds confirmation for T3: hovering \texttt{hr=6} in the gra
 \label{fig:hourclock}
 \end{figure}
 
-\subsection{Die Hard Water Jugs: Clustering and Dense Transitions}
-
-The specification models two jugs (5 and 3 gallons) with six actions (\texttt{FillBig}, \texttt{FillSmall}, \texttt{EmptyBig}, \texttt{EmptySmall}, \texttt{BigToSmall}, \texttt{SmallToBig}). States are grouped by the value of \texttt{big} into six clusters (\texttt{big=0} through \texttt{big=5}). With an average of 3.6 outgoing transitions per state, a flat node-link layout produces an illegible tangle with no discernible structure.
 
 \begin{figure*}[!ht]
 \centering
@@ -175,13 +166,29 @@ The specification models two jugs (5 and 3 gallons) with six actions (\texttt{Fi
 \label{fig:splitview}
 \end{figure*}
 
+Fig.~\ref{fig:hourclock} illustrates a key insight about when each representation is most valuable. In the graph view (left), the 12 nodes are enclosed in one convex hull and arranged roughly in a circle by the force simulation---but the exact ordering around the ring depends on simulation convergence and is not guaranteed to reflect the logical 1--12 sequence. Confirming the cyclic ordering requires manually tracing each edge, a task that scales poorly even for this simple specification.
+
+The matrix view (right) reveals the specification's structure unambiguously. The pattern is distinctive: a diagonal band of filled cells exactly one step above the main diagonal, plus a single isolated cell at position $(12, 1)$ for the wrap-around. This pattern is immediately recognisable as a deterministic cycle---every state has exactly one outgoing and one incoming transition, and no state is a dead end. An engineer can verify in seconds that the specification is deterministic, complete, and correctly cyclic. No edge tracing is required. This finding directly aligns with Ghoniem et al.~\cite{ghoniem2004comparison}: for specifications where precise connectivity assessment matters, the matrix is not merely comparable to the graph---it is strictly superior.
+
+The coordinated view adds confirmation for T3: hovering \texttt{hr=6} in the graph immediately highlights row~6 and column~6 in the matrix, confirming one incoming transition (from \texttt{hr=5}) and one outgoing (to \texttt{hr=7}). For this regular specification the coordination is not essential---the matrix alone suffices---but it demonstrates the interaction protocol that becomes critical for the complex, multi-cluster case below.
+
+
+
+
+\subsection{Die Hard Water Jugs: Clustering and Dense Transitions}
+
+
+The specification models two jugs (5 and 3 gallons) with six actions (\texttt{FillBig}, \texttt{FillSmall}, \texttt{EmptyBig}, \texttt{EmptySmall}, \texttt{BigToSmall}, \texttt{SmallToBig}). States are grouped by the value of \texttt{big} into six clusters (\texttt{big=0} through \texttt{big=5}). With an average of 3.6 outgoing transitions per state, a flat node-link layout produces an illegible tangle with no discernible structure.
+
 In Fig.~\ref{fig:splitview} (left), the \textbf{clustered graph view (T1, T2)} makes cluster structure immediately legible. Each cluster is enclosed in a colour-coded convex hull; the two largest clusters (\texttt{big=0} and \texttt{big=5}, each with four states) appear at opposite ends of the variable's range. The arc connecting them is among the thickest, correctly encoding that \texttt{FillBig} from any \texttt{big=0} state reaches \texttt{big=5} directly---the single most common transition type. This arc thickness encodes a structural insight that is invisible in a flat layout. Within clusters, nodes representing states with \texttt{big=1} or \texttt{big=2} are small two-state clusters, reflecting the constrained interactions possible at those jug levels. The spatial grouping allows an engineer to immediately identify which value of \texttt{big} represents the goal (\texttt{big=4}) and which clusters are likely predecessors, before inspecting any individual transition.
+
+
 
 In Fig.~\ref{fig:splitview} (right), the \textbf{matrix view (T2, T3)} reveals a rich block structure invisible in the graph. Intra-cluster transitions appear as dense coloured blocks along the diagonal---clearly visible for \texttt{big=5} (top-left, a dense $4 \times 4$ block) and \texttt{big=0} (bottom-right). Off-diagonal filled cells show inter-cluster transitions; their asymmetric distribution confirms the directed nature of the graph. Two structural properties are immediately readable without hovering: boundary states where one or both jugs are completely full or empty have visibly fewer filled cells per row (fewer enabled actions); and no row is entirely empty (every state has at least one successor). These properties are impossible to verify at a glance in the graph view.
 
+
+
 The \textbf{coordinated view (T3, T4)} enables path tracing toward the goal state \texttt{big=4,small=0}. Hovering this state in the graph highlights its column in the matrix (predecessor states) and row (successor states). Stepping backward through predecessors---re-hovering each to reveal its own incoming transitions---traces the solution path incrementally. At each step the graph provides spatial context (which cluster each predecessor belongs to) while the matrix provides precise connectivity (exactly which states feed into it and via which actions shown in the cell tooltip). Neither view alone supports this workflow: the graph lacks the precision for step-by-step verification, and the matrix lacks the spatial orientation to situate each predecessor in the broader state space.
-
-
 
 \section{Discussion and Conclusion}
 
@@ -191,7 +198,7 @@ Our tool targets TLA+ specifications with tens to low hundreds of states, the mo
 
 We have not yet conducted a formal user evaluation; the usage scenarios are based on our own expert analysis. A rigorous evaluation following two complementary tracks, qualitative feedback from engineers working with TLA+ in industry and a controlled user study comparing task performance across views, is our highest priority for future work. Additional future directions include direct integration with the TLC model checker to streamline the workflow, hierarchical edge bundling~\cite{holten2006hierarchical} to reduce visual clutter for dense cluster pairs, and bidirectional editing that propagates changes from the visualisation back to the TLA+ source.
 
-Our tool addresses a practical need in the formal methods community: as TLA+ adoption grows in industry~\cite{newcombe2015amazon, resch2017tla}, engineers who are not formal methods experts need visual tools to comprehend the state spaces produced by model checking. By adapting techniques from the information visualisation literature to the specific structure of TLA+ state spaces, our tool makes formal specifications more accessible and supports the verification workflow that is important for mission-critical systems engineering.
+Our tool addresses a practical need in the formal methods community: as TLA+ adoption grows in industry~\cite{newcombe2015amazon, resch2017tla}, engineers who are not formal methods experts need visual tools to comprehend the state spaces produced by model checking. By adapting techniques from the information visualisation literature to the specific structure of TLA+ state spaces, our tool makes formal specifications more accessible and supports the verification workflow on which mission-critical systems engineering depends.
 
 \balance
 \bibliographystyle{IEEEtran}
