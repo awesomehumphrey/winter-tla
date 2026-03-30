@@ -77,7 +77,7 @@ In graph visualisation, clustered graph drawing~\cite{eades1996hierarchical} and
 
 \section{Design Process}
 
-Our tool was developed through an iterative design process informed by our experience deploying TLA+ specifications in industry projects. Engineers in these projects who previously struggled to understand the TLA+ domain-specific language reported that visualisation of state spaces greatly assisted their understanding and use of the specifications. However, feedback from these engineers indicated that standard force-directed layouts became unreadable for specifications with more than approximately 20 states, directly motivating the multi-view approach presented in this paper. We followed the design study methodology described by Sedlmair et al.~\cite{sedlmair2012design}. Following Munzner's nested model~\cite{munzner2009nested}, our task analysis addresses the domain level, our data model addresses the abstraction level, and our view designs address the encoding level.
+Our tool was developed through an iterative design process informed by our experience deploying TLA+ specifications in industry projects. We followed the design study methodology described by Sedlmair et al.~\cite{sedlmair2012design}. Following Munzner's nested model~\cite{munzner2009nested}, our task analysis addresses the domain level, our data model addresses the abstraction level, and our view designs address the encoding level.
 
 \subsection{Task Analysis}
 
@@ -102,23 +102,9 @@ We explored three design approaches and selected \textbf{Approach~C: Combination
 
 \section{Multi-View Visualisation Tool}
 
-The tool is implemented as a web application using HTML, CSS, and JavaScript, with D3.js~\cite{bostock2011d3} providing the visualisation primitives. It consists of three views: clustered graph view, adjacency matrix view, and coordinated split view. Each view can be used independently or in combination through the split view, which embeds the graph and matrix views as iframes and coordinates their interactions through the browser's \texttt{postMessage} API.
+The tool is implemented as a web application using D3.js~\cite{bostock2011d3}, requiring no installation. It consists of three coordinated views. The clustered graph view uses a force simulation with a cluster attraction force that pulls nodes toward their cluster centroid, addressing D1; convex hulls delineate cluster boundaries, and aggregate arcs connect cluster centroids with thickness encoding inter-cluster transition count, enabling drill-down from overview to detail on click. On hover, non-adjacent nodes fade to 20\% opacity and connected edges reveal directional arrowheads, with bidirectional pairs splitting into two directed curved arcs, directly supporting T3. The adjacency matrix view eliminates edge crossings entirely (addressing D2) by ordering states by cluster membership, making intra-cluster transitions visible as coloured diagonal blocks; cell tooltips display source state, target state, and action name, providing the precise transition detail that differentiates this from a generic adjacency matrix and directly supports T3. The coordinated split view links both views bidirectionally so that hovering a state in either view immediately highlights the corresponding state and connections in the other, addressing D3.
 
-\subsection{Clustered Force-Directed Graph View}
-
-The graph view renders the state space as a clustered force-directed layout. The layout uses D3's force simulation with five forces: centering, charge repulsion, collision detection, cluster attraction (pulling nodes toward the centroid of their cluster), and link constraint. Nodes are rendered as circles coloured by cluster membership. Edges between nodes are rendered as paths; for pairs of nodes with bidirectional transitions, the default view shows a single slightly thicker line to reduce clutter. Convex hulls are drawn around clusters with two or more members using a semi-transparent fill of the cluster colour.
-
-\textbf{Interaction.} Hovering over a node triggers a progressive disclosure interaction: the selected node and its immediate neighbours remain at full opacity, while all other nodes fade to 20\% opacity. Connected edges turn red and display directional arrowheads; for bidirectional pairs, the single default line splits into two curved edges with arrowheads showing each direction. A tooltip displays the state label, cluster identifier, and in/out degree.
-
-\textbf{Cluster-level aggregation.} For clusters with two or more members, a centroid circle is drawn at the cluster centre. Aggregate cluster-level edges connect clusters with curved arcs whose thickness encodes the number of individual transitions between those clusters. Clicking a cluster-level edge reveals the individual node-to-node transitions, enabling drill-down from overview to detail following Shneiderman's visual information seeking mantra~\cite{shneiderman1996eyes}.
-
-\subsection{Adjacency Matrix View}
-
-The matrix view renders the state-transition graph as an adjacency matrix. The matrix is ordered by cluster membership (default), grouping states belonging to the same cluster together along the diagonal. A filled (black) cell at position $(i,j)$ indicates a transition from state $i$ to state $j$. Cells within the same cluster are lightly shaded with the cluster colour at 40\% opacity, making cluster boundaries immediately visible as coloured blocks along the diagonal. Hovering over a row or column label highlights that state's entire row and column, with connected cells outlined in red. Hovering over a filled cell displays a tooltip showing the source state, target state, and action name (if available) for the transition, directly supporting task T3 (transition inspection). The matrix supports reordering by cluster (default) or by node identifier.
-
-\subsection{Coordinated Split View}
-
-The split view displays the graph and matrix views side by side in a 3:2 width ratio. Both views are embedded as iframes, with a shared toolbar for file upload and clear controls. The bidirectional highlighting is implemented through the \texttt{postMessage} API: hovering a state in one view sends a \texttt{highlight} message that the parent window forwards to the other view. This coordination supports a cross-referencing workflow: an engineer can identify an interesting cluster in the matrix and then hover over a state in that block to immediately locate it spatially in the graph view, and vice versa.
+In prior industry deployments of TLA+ specifications, engineers who previously struggled with the domain-specific language reported that state space visualisation greatly assisted their understanding. Crucially, force-directed layouts became unreadable for specifications with more than approximately 20 states, directly motivating the multi-view approach presented here.
 
 \section{Usage Scenarios}
 
