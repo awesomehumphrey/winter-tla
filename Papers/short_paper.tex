@@ -51,15 +51,7 @@ However, these specifications require deep expertise in temporal logic. For many
 
 Research in information visualisation has established that different visual representations have complementary strengths. Ghoniem et al.~\cite{ghoniem2004comparison} demonstrated that adjacency matrices outperform node-link diagrams for dense graphs on tasks such as finding connections, while node-link diagrams remain superior for path-following tasks. Henry and Fekete~\cite{henry2006matrixexplorer} showed that combining both representations in a coordinated dual-representation system enables users to leverage the strengths of each. The TensorFlow Graph Visualizer~\cite{wongsuphasawat2018tensorflow} demonstrated that hierarchical clustering, semantic grouping, and interactive detail-on-demand can make computational graphs with thousands of nodes navigable.
 
-Drawing on these insights, we present a design study~\cite{sedlmair2012design} of a multi-view visualisation tool for TLA+ state spaces. We make the following contributions:
-
-\begin{itemize}
-\item A \textbf{task analysis} for TLA+ state space visualisation, identifying four key tasks engineers need to perform.
-\item A \textbf{clustered force-directed graph view} that groups states by shared variable values, with convex hull cluster boundaries, colour-coded cluster membership, and interactive detail-on-demand.
-\item An \textbf{adjacency matrix view} with cluster-based ordering that reveals connectivity patterns and cluster structure at higher information density than node-link diagrams.
-\item A \textbf{coordinated split view} with bidirectional brushing-and-linking: hovering a state in either view highlights the corresponding state and its connections in the other view.
-\item \textbf{Usage scenarios} on two TLA+ specifications of increasing complexity, demonstrating how the multi-view approach supports each identified task.
-\end{itemize}
+Drawing on these insights, we present a design study~\cite{sedlmair2012design} of a multi-view visualisation tool for TLA+ state spaces. We first characterise the domain through a task analysis that identifies what engineers need when exploring state spaces, from high-level structural overview to detailed transition inspection. To address the mismatch between graph topology and semantic structure, we group states by shared variable values in a clustered force-directed layout with convex hull boundaries and colour-coded cluster membership. To handle the visual clutter caused by dense inter-cluster connectivity, we provide an adjacency matrix view with cluster-based ordering that reveals connectivity patterns without edge crossings. To support the full range of exploration tasks, we link both views in a coordinated split view with bidirectional brushing-and-linking, so that hovering a state in either view highlights the corresponding state and its connections in the other. We demonstrate the tool on two TLA+ specifications of increasing complexity, showing how the coordinated views support each identified task.
 
 \section{Background and Related Work}
 
