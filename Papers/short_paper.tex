@@ -26,12 +26,18 @@
 
 \title{Coordinated Graph and Matrix Views for TLA+ State Space Comprehension: A Design Study}
 
-\author{
-\IEEEauthorblockN{Anonymous Author(s)}
-\IEEEauthorblockA{Anonymous Affiliation\\
-Anonymous City, Anonymous Country\\
-anonymous@email.com}
-}
+% \author{
+% \IEEEauthorblockN{Anonymous Author(s)}
+% \IEEEauthorblockA{Anonymous Affiliation\\
+% Anonymous City, Anonymous Country\\
+% %anonymous@email.com
+% }
+% }
+\author{\IEEEauthorblockN{Humphrey O. Obie}
+\IEEEauthorblockA{\textit{Department of Computing Technologies} \\
+\textit{Swinburne University of Technology}\\
+Melbourne, Australia \\
+hobie@swin.edu.au} }
 
 \maketitle
 
@@ -40,7 +46,7 @@ Mission-critical systems have to comply with rigorous formal standards, yet the 
 \end{abstract}
 
 \begin{IEEEkeywords}
-formal methods, TLA+, visualisation, state machine, adjacency matrix, coordinated views, design study, model checking
+formal methods, TLA+, visualisation, state machine, adjacency matrix, coordinated views, design study%, model checking
 \end{IEEEkeywords}
 
 \section{Introduction}
@@ -62,7 +68,7 @@ Research in information visualisation has established that different visual repr
 % \item \textbf{Usage scenarios} on two TLA+ specifications of increasing complexity, demonstrating how the multi-view approach supports each identified task.
 % \end{itemize}
 
-Drawing on these insights, we present a design study~\cite{sedlmair2012design} of a multi-view visualisation tool for TLA+ state spaces. We first characterise the domain through a task analysis that identifies what engineers need when exploring state spaces, from high-level structural overview to detailed transition inspection. To address the mismatch between graph topology and semantic structure, we group states by shared variable values in a clustered force-directed layout with convex hull boundaries and colour-coded cluster membership. To handle the visual clutter caused by dense inter-cluster connectivity, we provide an adjacency matrix view with cluster-based ordering that reveals connectivity patterns without edge crossings. To support the full range of exploration tasks, we link both views in a coordinated split view with bidirectional brushing-and-linking, so that hovering a state in either view highlights the corresponding state and its connections in the other. We demonstrate the tool on two TLA+ specifications of increasing complexity, showing how the coordinated views support each identified task.
+Drawing on these insights, we present a design study~\cite{sedlmair2012design} of a multi-view visualisation tool for TLA+ state spaces. We first characterise the domain through a task analysis \cite{OBIE2020100961} that identifies what engineers need when exploring state spaces, from high-level structural overview to detailed transition inspection. To address the mismatch between graph topology and semantic structure, we group states by shared variable values in a clustered force-directed layout with convex hull boundaries and colour-coded cluster membership. To handle the visual clutter caused by dense inter-cluster connectivity, we provide an adjacency matrix view with cluster-based ordering that reveals connectivity patterns without edge crossings. To support the full range of exploration tasks, we link both views in a coordinated split view with bidirectional brushing-and-linking, so that hovering a state in either view highlights the corresponding state and its connections in the other. We demonstrate the tool on two TLA+ specifications of increasing complexity, showing how the coordinated views support each identified task.
 
 
 \section{Background and Related Work}
@@ -71,18 +77,21 @@ Drawing on these insights, we present a design study~\cite{sedlmair2012design} o
 
 TLA+ is a formal specification language created by Leslie Lamport for specifying and reasoning about concurrent and distributed systems~\cite{lamport2003specifying}. TLA+ specifications describe a system as a state machine: an initial state predicate defines the set of possible starting states, and a next-state relation defines how the system can transition from one state to another. Each state is a complete assignment of values to all specification variables, and each transition is triggered by an action.
 
-The TLC model checker~\cite{yuan1999model} is the primary verification tool for TLA+ specifications. Given a specification and model constraints, TLC exhaustively enumerates all reachable states and transitions using breadth-first search, producing a complete state graph $G = (V, E)$ where each vertex $v \in V$ represents a distinct reachable state and each directed edge $(u, v) \in E$ represents a transition. A fundamental challenge is the state explosion problem: the number of reachable states grows combinatorially with the number of specification variables and their domains.
+The TLC model checker~\cite{yuan1999model} is the primary verification tool for TLA+ specifications. Given a specification and model constraints, TLC exhaustively enumerates all reachable states and transitions% using breadth-first search
+, producing a complete state graph $G = (V, E)$ where each vertex $v \in V$ represents a distinct reachable state and each directed edge $(u, v) \in E$ represents a transition. A fundamental challenge is the state explosion problem: the number of reachable states grows combinatorially with the number of specification variables and their domains.
 
 \subsection{Related Work}
 
+%Visualisation of formal specifications has received attention across multiple communities. Harel's Statecharts~\cite{harel1987statecharts} introduced a visual formalism for hierarchical state machines that has influenced specification languages and their visualisation tools. For TLA+ specifically, the TLA+ Toolbox provides the TLC model checker with textual output but does not include graphical visualisation of the state space. Other formal methods tools provide visualisation capabilities for their respective languages: the Alloy Analyser~\cite{jackson2012alloy} visualises instances as node-link diagrams, ProB~\cite{leuschel2008prob} provides a graphical state space viewer for the B-method~\cite{abrial1996bbook}, and UPPAAL~\cite{behrmann2004uppaal} provides a graphical editor for timed automata. Across these tools, a common limitation is the reliance on standard node-link diagrams, which inherently limits scalability.
+
 Visualisation of formal specifications has received attention across multiple communities. Harel's Statecharts~\cite{harel1987statecharts} introduced a visual formalism for hierarchical state machines that has influenced specification languages and their visualisation tools. For TLA+ specifically, the TLA+ Toolbox provides the TLC model checker with textual output but does not include graphical visualisation of the state space. Other formal methods tools provide visualisation capabilities for their respective languages: the Alloy Analyser~\cite{jackson2012alloy} primarily visualises specification instances as node-link diagrams, ProB~\cite{leuschel2008prob} provides a graphical state space viewer for the B-method~\cite{abrial1996bbook} and related formalisms, and UPPAAL~\cite{behrmann2004uppaal} provides a graphical editor for authoring timed automata, though not for exploring the resulting state space. Where these tools do visualise state spaces, they rely on standard node-link diagrams, which inherently limits scalability.
 
-In graph visualisation, clustered graph drawing~\cite{eades1996hierarchical} and hierarchical layouts~\cite{sugiyama1981hierarchical} address some scalability problems. Adjacency matrices provide a fundamentally different representation that avoids edge crossings entirely~\cite{bertin1983semiology, behrisch2016reordering}. The principle of coordinated multiple views (CMV)~\cite{roberts2007cmv} is well-established in information visualisation, with Shneiderman's visual information seeking mantra~\cite{shneiderman1996eyes} providing the theoretical basis. Our coordinated split view implements bidirectional brushing-and-linking between the graph and matrix views, following the design guidelines of Baldonado et al.~\cite{baldonado2000guidelines} and the tight coupling approach of North and Shneiderman~\cite{north2000snap}.
+In graph visualisation, clustered graph drawing~\cite{eades1996hierarchical} and hierarchical layouts~\cite{sugiyama1981hierarchical} address some scalability problems. Adjacency matrices provide a fundamentally different representation that avoids edge crossings entirely~\cite{bertin1983semiology, behrisch2016reordering}. The principle of coordinated multiple views (CMV)~\cite{roberts2007cmv} is well-established in information visualisation, with Shneiderman's visual information seeking mantra~\cite{shneiderman1996eyes} providing the theoretical basis. Our coordinated split view implements bidirectional brushing-and-linking between the graph and matrix views, following the design guidelines and the tight coupling approach in the literature ~\cite{north2000snap,baldonado2000guidelines}.
 
 \section{Design Process}
 
 
-Our tool was developed through an iterative design process informed by our experience in TLA+ specifications in industry projects. We followed the design study methodology described by Sedlmair et al.~\cite{sedlmair2012design}. Following Munzner's nested model~\cite{munzner2009nested}, our task analysis addresses the domain level, our data model addresses the abstraction level, and our view designs address the encoding level.
+Our tool was developed through an iterative design process informed by our experience in TLA+ specifications in industry projects. We followed the design study methodology~\cite{sedlmair2012design}. Following Munzner's nested model~\cite{munzner2009nested}, our task analysis addresses the domain level, our data characterisation addresses the abstraction level, and our view designs address the encoding level.
 
 \subsection{Task Analysis}
 
@@ -102,13 +111,13 @@ The TLC model checker produces a directed graph $G = (V, E)$ where each vertex $
 
 \subsection{Design Challenges and Rationale}
 
-We identified three design challenges: \textbf{D1.}~Mismatch between topology and semantics (the spatial layout of a force-directed graph does not necessarily reflect the semantic structure), corresponding to the challenge identified by Wongsuphasawat et al.~\cite{wongsuphasawat2018tensorflow} for TensorFlow graphs; \textbf{D2.}~Visual clutter from dense connectivity (C2 causes severe visual clutter in node-link diagrams); and \textbf{D3.}~Task diversity (the four tasks require different visual representations, and no single view optimally supports all four).
+We identified three design challenges: \textbf{D1.}~Mismatch between topology and semantics (the spatial layout of a force-directed graph does not necessarily reflect the semantic structure); \textbf{D2.}~Visual clutter from dense connectivity (C2 causes severe visual clutter in node-link diagrams); and \textbf{D3.}~Task diversity (the four tasks, T1-T4, require different visual representations, and no single view optimally supports all four).
 
-We explored three design approaches and selected \textbf{Approach~C: Combination of graph and matrix views}. This approach provides both views simultaneously in a coordinated split view, leveraging the complementary strengths of each representation to address all three design challenges. The clustered graph view addresses D1 by using cluster forces to spatially group semantically related states. The matrix view addresses D2 by providing a clutter-free representation. The coordinated split view addresses D3 by enabling engineers to use the most appropriate representation for each task while maintaining context through bidirectional linking, aligning with the design principles established by Henry and Fekete~\cite{henry2006matrixexplorer}.
+We explored different design approaches and selected the \textit{combination of graph and matrix views}. This approach provides both the graph and matrix views simultaneously in a coordinated split view, leveraging the complementary strengths of each representation to address all three design challenges. The clustered graph view addresses D1 by using cluster forces to spatially group semantically related states. The matrix view addresses D2 by providing a clutter-free representation. The coordinated split view addresses D3 by enabling engineers to use the most appropriate representation for each task while maintaining context through bidirectional linking, aligning with the established design principles~\cite{henry2006matrixexplorer}.
 
 \section{Multi-View Visualisation Tool}
 
-The tool is implemented as a web application using D3.js~\cite{bostock2011d3}, requiring no installation. It consists of three coordinated views. The clustered graph view uses a force simulation with a cluster attraction force that pulls nodes toward their cluster centroid, addressing D1; convex hulls delineate cluster boundaries, and aggregate arcs connect cluster centroids with thickness encoding inter-cluster transition count, enabling drill-down from overview to detail on click. On hover, non-adjacent nodes fade to 20\% opacity and connected edges reveal directional arrowheads, with bidirectional pairs splitting into two directed curved arcs, directly supporting T3. The adjacency matrix view eliminates edge crossings entirely (addressing D2) by ordering states by cluster membership, making intra-cluster transitions visible as coloured diagonal blocks; cell tooltips display source state, target state, and action name, providing the precise transition detail that differentiates this from a generic adjacency matrix and directly supports T3. The coordinated split view links both views bidirectionally so that hovering a state in either view highlights the corresponding state and connections in the other, addressing D3.
+The tool is implemented as a web application using D3.js~\cite{bostock2011d3}. It consists of three coordinated views. The clustered graph view uses a force simulation with a cluster attraction force that pulls nodes toward their cluster centroid, addressing D1; convex hulls delineate cluster boundaries, and aggregate arcs connect cluster centroids with thickness encoding inter-cluster transition count, enabling drill-down from overview to detail on click. On hover, non-adjacent nodes fade to 20\% opacity and connected edges reveal directional arrowheads, with bidirectional pairs splitting into two directed curved arcs, directly supporting T3. The adjacency matrix view eliminates edge crossings entirely (addressing D2) by ordering states by cluster membership, making intra-cluster transitions visible as coloured diagonal blocks; cell tooltips display source state, target state, and action name, providing the precise transition detail that differentiates this from a generic adjacency matrix and directly supports T3. The coordinated split view links both views bidirectionally so that hovering a state in either view highlights the corresponding state and connections in the other, addressing D3.
  
 
 \section{Usage Scenarios}
@@ -145,23 +154,35 @@ THEOREM HC => []HCini
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/hourclock_split.png}
-\caption{The coordinated split view for the HourClock specification. Left: 12 nodes in a single cluster arranged by force-directed layout. Right: adjacency matrix showing the cyclic pattern as a diagonal band one step above the main diagonal.}
+\caption{The coordinated split view for the HourClock specification. (a): 12 nodes in a single cluster arranged by force-directed layout. (b): adjacency matrix showing the cyclic pattern as a diagonal band one step above the main diagonal.}
 \label{fig:hourclock}
 \end{figure}
+
+
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/diehard_flat.png}
+\caption{The Die Hard specification rendered as a flat force-directed layout without clustering. With 16 states and 58 transitions, the layout degenerates, with no discernible structure. %The clustered multi-view approach (Fig.~\ref{fig:splitview}) renders the same data readable. 
+}
+
+\label{fig:flat}
+\end{figure}
+
 
 
 \begin{figure*}[!ht]
 \centering
 \includegraphics[width=\textwidth]{figures/diehard_split.png}
-\caption{The coordinated split view showing the Die Hard water jugs specification (16 states, 58 transitions). Left: clustered force-directed graph with six clusters (one per \texttt{big}-jug value), colour-coded by cluster membership, with convex hulls delineating cluster boundaries and aggregate cluster-level edges whose thickness encodes transition count. Right: adjacency matrix ordered by cluster membership, with filled cells indicating transitions and coloured diagonal blocks marking cluster boundaries. Hovering a node in either view highlights connected edges and states in both views.}
+\caption{The coordinated split view showing the Die Hard water jugs specification (16 states, 58 transitions). (a): clustered force-directed graph with six clusters (one per \texttt{big}-jug value), colour-coded by cluster membership, with convex hulls delineating cluster boundaries and aggregate cluster-level edges whose thickness encodes transition count. (b): adjacency matrix ordered by cluster membership, with filled cells indicating transitions and coloured diagonal blocks marking cluster boundaries. Hovering a node in either view highlights connected edges and states in both views.}
 \label{fig:splitview}
 \end{figure*}
 
-Fig.~\ref{fig:hourclock} illustrates a key insight about when each representation is most valuable. In the graph view (left), the 12 nodes are enclosed in one convex hull and arranged roughly in a circle by the force simulation, but the exact ordering around the ring depends on simulation convergence and is not guaranteed to reflect the logical 1--12 sequence. Confirming the cyclic ordering requires manually tracing each edge, a task that scales poorly even for this simple specification.
+Fig.~\ref{fig:hourclock} illustrates a key insight about when each representation is most valuable. In the graph view (Fig. \ref{fig:hourclock}a), the 12 nodes are enclosed in one convex hull and arranged roughly in a circle by the force simulation, but the exact ordering around the ring depends on simulation convergence and is not guaranteed to reflect the logical 1--12 sequence. Confirming the cyclic ordering requires manually tracing each edge.%, a task that scales poorly even for this simple specification.
 
-The matrix view (right) reveals the specification's structure unambiguously. The pattern is distinctive: a diagonal band of filled cells exactly one step above the main diagonal, plus a single isolated cell at position $(12, 1)$ for the wrap-around. This pattern is immediately recognisable as a deterministic cycle: every state has exactly one outgoing and one incoming transition, and no state is a dead end. An engineer can verify in seconds that the specification is deterministic, complete, and correctly cyclic. No edge tracing is required. This finding directly aligns with Ghoniem et al.~\cite{ghoniem2004comparison}: for specifications where precise connectivity assessment matters, the matrix is not merely comparable to the graph but strictly superior.
+The matrix view (Fig. \ref{fig:hourclock}b) reveals the specification's structure unambiguously. The pattern is distinctive: a diagonal band of filled cells exactly one step above the main diagonal, plus a single isolated cell at position $(12, 1)$ for the wrap-around. This pattern is immediately recognisable as a deterministic cycle: every state has exactly one outgoing and one incoming transition, and no state is a dead end. An engineer can verify in seconds that the specification is deterministic, complete, and correctly cyclic. No edge tracing is required. This finding shows that for specifications where precise connectivity assessment matters, the matrix is not merely comparable to the graph but superior~\cite{ghoniem2004comparison}.
 
-The coordinated view adds confirmation for T3: hovering \texttt{hr=6} in the graph immediately highlights row~6 and column~6 in the matrix, confirming one incoming transition (from \texttt{hr=5}) and one outgoing (to \texttt{hr=7}). For this regular specification the coordination is not essential (the matrix alone suffices), but it demonstrates the interaction protocol that becomes critical for the complex, multi-cluster case below.
+The coordinated view adds confirmation for T3: hovering \texttt{hr=6} in the graph immediately highlights row~6 and column~6 in the matrix, confirming one incoming transition (from \texttt{hr=5}) and one outgoing (to \texttt{hr=7}). For this regular specification, the coordination is not essential (the matrix alone suffices), but it demonstrates the interaction protocol that becomes important for the complex, multi-cluster case below.
 
 
 
@@ -173,18 +194,15 @@ The coordinated view adds confirmation for T3: hovering \texttt{hr=6} in the gra
 
 The specification models two jugs (5 and 3 gallons) with six actions (\texttt{FillBig}, \texttt{FillSmall}, \texttt{EmptyBig}, \texttt{EmptySmall}, \texttt{BigToSmall}, \texttt{SmallToBig}). States are grouped by the value of \texttt{big} into six clusters (\texttt{big=0} through \texttt{big=5}). With an average of 3.6 outgoing transitions per state, a flat node-link layout produces an illegible tangle with no discernible structure. Fig.~\ref{fig:flat} illustrates this directly: rendering the same 16 states and 58 transitions as a standard force-directed graph without clustering produces overlapping nodes and crossing edges where no meaningful structure is visible. Edge crossings obscure all cluster structure, and it is impossible to trace individual transitions. Alternative layout algorithms do not resolve the problem. For example, Graphviz's\footnote{https://dreampuf.github.io/GraphvizOnline/} hierarchical \texttt{dot} engine imposes a false top-to-bottom hierarchy on a non-hierarchical state space, its force-directed engines (\texttt{neato}, \texttt{fdp}, and others) suffer from the same node overlap and edge crossing issues, and its circular layout (\texttt{circo}) arranges nodes in a ring but fills the interior with a dense web of crossing edges. None of these standard approaches reveal the cluster structure that is semantically meaningful in TLA+ state spaces. Our clustered multi-view approach transforms this same data into a readable visualisation where cluster membership, cluster sizes, and inter-cluster connectivity patterns are all visible.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=\columnwidth]{figures/diehard_flat.png}
-\caption{The Die Hard specification rendered as a flat force-directed layout without clustering. With 16 states and 58 transitions, the layout degenerates, with no discernible structure. The clustered multi-view approach (Fig.~\ref{fig:splitview}) renders the same data readable.}
-\label{fig:flat}
-\end{figure}
 
-In Fig.~\ref{fig:splitview} (left), the \textbf{clustered graph view (T1, T2)} makes cluster structure immediately legible. Each cluster is enclosed in a colour-coded convex hull; the two largest clusters (\texttt{big=0} and \texttt{big=5}, each with four states) appear at opposite ends of the variable's range. The arc connecting them is among the thickest, correctly encoding that \texttt{FillBig} from any \texttt{big=0} state reaches \texttt{big=5} directly: all four states in the cluster share this transition, making it the only action on that arc. This arc thickness encodes a structural insight that is invisible in a flat layout. The four intermediate clusters (\texttt{big=1} through \texttt{big=4}) each contain only two states, reflecting the constrained interactions possible at those jug levels. The spatial grouping allows an engineer to immediately identify which value of \texttt{big} represents the goal (\texttt{big=4}) and which clusters are likely predecessors, before inspecting any individual transition.
+
+%In Fig.~\ref{fig:splitview} (left), the \textbf{clustered graph view (T1, T2)} makes cluster structure immediately legible. Each cluster is enclosed in a colour-coded convex hull; the two largest clusters (\texttt{big=0} and \texttt{big=5}, each with four states) appear at opposite ends of the variable's range. The arc connecting them is among the thickest, correctly encoding that \texttt{FillBig} from any \texttt{big=0} state reaches \texttt{big=5} directly, making it the single most common transition type. This arc thickness encodes a structural insight that is invisible in a flat layout. Within clusters, nodes representing states with \texttt{big=1} or \texttt{big=2} are small two-state clusters, reflecting the constrained interactions possible at those jug levels. The spatial grouping allows an engineer to immediately identify which value of \texttt{big} represents the goal (\texttt{big=4}) and which clusters are likely predecessors, before inspecting any individual transition.
+
+In Fig.~\ref{fig:splitview}a, the \textbf{clustered graph view (T1, T2)} makes cluster structure immediately legible. Each cluster is enclosed in a colour-coded convex hull; the two largest clusters (\texttt{big=0} and \texttt{big=5}, each with four states) appear at opposite ends of the variable's range. The arc connecting them is among the thickest, correctly encoding that \texttt{FillBig} from any \texttt{big=0} state reaches \texttt{big=5} directly: all four states in the cluster share this transition, making it the only action on that arc. This arc thickness encodes a structural insight that is invisible in a flat layout. The four intermediate clusters (\texttt{big=1} through \texttt{big=4}) each contain only two states, reflecting the constrained interactions possible at those jug levels. The spatial grouping allows an engineer to immediately identify which value of \texttt{big} represents the goal (\texttt{big=4}) and which clusters are likely predecessors, before inspecting any individual transition.
 
 
 
-In Fig.~\ref{fig:splitview} (right), the \textbf{matrix view (T2, T3)} reveals a rich block structure invisible in the graph. Intra-cluster transitions appear as dense coloured blocks along the diagonal, clearly visible for \texttt{big=5} (top-left, a dense $4 \times 4$ block) and \texttt{big=0} (bottom-right). Off-diagonal filled cells show inter-cluster transitions; their asymmetric distribution confirms the directed nature of the graph. Two structural properties are immediately readable without hovering: boundary states where one or both jugs are completely full or empty have visibly fewer filled cells per row (fewer enabled actions); and no row is entirely empty (every state has at least one successor). These properties are impossible to verify at a glance in the graph view.
+In Fig.~\ref{fig:splitview}b, the \textbf{matrix view (T2, T3)} reveals a rich block structure invisible in the graph. Intra-cluster transitions appear as dense coloured blocks along the diagonal, clearly visible for \texttt{big=5} (top-left, a dense $4 \times 4$ block) and \texttt{big=0} (bottom-right). Off-diagonal filled cells show inter-cluster transitions; their asymmetric distribution confirms the directed nature of the graph. Two structural properties are immediately readable without hovering: boundary states where one or both jugs are completely full or empty have visibly fewer filled cells per row (fewer enabled actions); and no row is entirely empty (every state has at least one successor). These properties are impossible to verify at a glance in the graph view.
 
 
 
@@ -192,9 +210,9 @@ The \textbf{coordinated view (T3, T4)} enables path tracing toward the goal stat
 
 \section{Discussion and Conclusion}
 
-Our usage scenarios confirm three findings from the visualisation literature. First, graph and matrix representations have complementary strengths~\cite{ghoniem2004comparison, henry2006matrixexplorer}: the graph supports overview and cluster identification (T1, T2), while the matrix excels at transition inspection and structural verification (T3). The HourClock scenario demonstrates the matrix can be strictly superior for regular specifications; the Die Hard scenario shows neither view alone is sufficient for complex ones. Second, variable-based clustering is highly effective for TLA+ state spaces, where domain knowledge provides a semantically meaningful criterion more informative than topological community detection, directly analogous to namespace-based grouping for TensorFlow graphs~\cite{wongsuphasawat2018tensorflow}. Third, bidirectional brushing-and-linking proved essential for path tracing: the Die Hard scenario shows that alternating between spatial orientation (graph) and precise connectivity (matrix) enables step-by-step counterexample analysis that neither view supports alone, consistent with coordinated multiple views principles~\cite{baldonado2000guidelines, roberts2007cmv}.
+Our usage scenarios confirm three findings from the visualisation literature. First, graph and matrix representations have complementary strengths~\cite{ghoniem2004comparison, henry2006matrixexplorer}: the graph supports overview and cluster identification (T1, T2), while the matrix excels at transition inspection and structural verification (T3). The HourClock scenario demonstrates the matrix can be superior for regular specifications; the Die Hard scenario shows neither view alone is sufficient for complex ones. Second, variable-based clustering is highly effective for TLA+ state spaces, where domain knowledge provides a semantically meaningful criterion more informative than topological community detection, similar to namespace-based grouping for TensorFlow graphs~\cite{wongsuphasawat2018tensorflow}. Third, bidirectional brushing-and-linking proved essential for path tracing: the Die Hard scenario shows that alternating between spatial orientation (graph) and precise connectivity (matrix) enables step-by-step counterexample analysis that neither view supports alone, consistent with coordinated multiple views principles~\cite{baldonado2000guidelines, roberts2007cmv}.
 
-In prior deployments of TLA+ specifications, engineers in these projects who previously struggled to understand the TLA+ domain-specific language reported that visualisation of state spaces assisted their understanding and use of the specifications. However, informal feedback from these engineers indicated that standard force-directed layouts became unreadable for specifications with more than approximately 20 states, directly motivating the multi-view approach presented in this paper. We have not yet conducted a formal user evaluation of the multi-view tool itself; the usage scenarios above are based on our own expert analysis rather than observed user behaviour.
+In prior deployments of TLA+ specifications, engineers in these projects who previously struggled to understand the TLA+ domain-specific language reported that visualisation of state spaces assisted their understanding and use of the specifications. However, informal feedback from these engineers indicated that standard force-directed layouts became unreadable for specifications with more than approximately 20 states, directly motivating the multi-view approach presented in this paper. %We have not yet conducted a formal user evaluation of the multi-view tool itself; the usage scenarios above are based on our own expert analysis rather than observed user behaviour.
 
 Our tool targets TLA+ specifications with tens to low hundreds of states, the most common range for visual exploration. The clustered graph view performs well up to approximately 50 states; beyond this, inter-cluster edge density causes increasing clutter even with clustering. The adjacency matrix scales better, as the grid layout eliminates edge crossings regardless of graph density, but cell size and label readability degrade beyond approximately 100 states as the matrix grows quadratically ($n \times n$ cells for $n$ states). The coordinated view's effective ceiling is therefore bounded by whichever individual view degrades first for the task at hand. Scaling beyond these limits demands abstraction techniques such as hierarchical clustering with collapsible sub-clusters, but any visual abstraction risks hiding counterexamples or making unreachable paths appear connected, raising the question of whether ``visual soundness'' can be defined analogously to abstraction soundness in model checking, providing formal guarantees about when a simplified visualisation faithfully represents the underlying state space.
 
@@ -206,7 +224,8 @@ Our tool addresses a practical need in the formal methods community: as TLA+ ado
 
 \section*{Acknowledgements}
 
-We thank Iman Avazpour and Chuong Ho for their contributions to evaluating early design concepts, and the systems engineers at our industry partners for their feedback on prototypes of the visualisation tool.
+We thank Iman Avazpour and Chuong Ho for their contributions to evaluating early design concepts.%, and engineers at our industry partners for their feedback on prototypes of the visualisation tool.
+
 
 \balance
 \bibliographystyle{IEEEtran}
